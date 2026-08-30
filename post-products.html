@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Post Product - MarketPlace</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f6;
+        }
+
+        nav {
+            background: #087f5b;
+            padding: 15px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 6px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 600px;
+            margin: 30px auto;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #087f5b;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .preview {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-top: 15px;
+            border-radius: 8px;
+            background: #eee;
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .post-button {
+            background: #087f5b;
+            color: white;
+        }
+
+        .back-button {
+            background: #777;
+            color: white;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .login-box {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .login-box a {
+            color: #087f5b;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <nav>
+
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="post-products.html">Post Product</a>
+        <a href="favorites.html">Favorites</a>
+        <a href="my-products.html">My Products</a>
+        <a href="account.html">My Account</a>
+
+    </nav>
+
+
+    <div class="container">
+
+
+        <div
+            id="loginRequired"
+            class="box login-box"
+            style="display:none;"
+        >
+
+            <h2>
+                Login Required
+            </h2>
+
+            <p>
+                Please login before posting a product.
+            </p>
+
+            <a href="login.html">
+                Login
+            </a>
+
+        </div>
+
+
+        <div
+            id="postBox"
+            class="box"
+        >
+
+            <h1>
+                Post Product
+            </h1>
+
+
+            <form id="productForm">
+
+
+                <label>
+                    Product Name
+                </label>
+
+                <input
+                    type="text"
+                    id="productName"
+                    placeholder="Enter product name"
+                    required
+                >
+
+
+                <label>
+                    Price
+                </label>
+
+                <input
+                    type="text"
+                    id="price"
+                    placeholder="Example: 50,000 RWF"
+                    required
+                >
+
+
+                <label>
+                    Category
+                </label>
+
+                <select
+                    id="category"
+                    required
+                >
+
+                    <option value="">
+                        Select category
+                    </option>
+
+                    <option value="Clothes">
+                        Clothes
+                    </option>
+
+                    <option value="Shoes">
+                        Shoes
+                    </option>
+
+                    <option value="Electronics">
+                        Electronics
+                    </option>
+
+                    <option value="Phones">
+                        Phones
+                    </option>
+
+                    <option value="Furniture">
+                        Furniture
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+
+                <label>
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    placeholder="Describe your product"
+                    required
+                ></textarea>
+
+
+                <label>
+                    Product Image
+                </label>
+
+                <input
+                    type="file"
+                    id="image"
+                    accept="image/*"
+                    required
+                >
+
+
+                <img
+                    id="preview"
+                    class="preview"
+                    alt="Preview"
+                >
+
+
+                <label>
+                    Seller Name
+                </label>
+
+                <input
+                    type="text"
+                    id="sellerName"
+                    required
+                >
+
+
+                <label>
+                    Phone Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="phone"
+                    placeholder="Example: 0780000000"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="post-button"
+                >
+                    Post Product
+                </button>
+
+
+                <button
+                    type="button"
+                    class="back-button"
+                    id="backButton"
+                >
+                    Cancel
+                </button>
+
+            </form>
+
+
+            <p id="message"></p>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+
+        /* =========================
+           USER INFORMATION
+        ========================= */
+
+        const loggedIn =
+            localStorage.getItem("loggedIn");
+
+        const userName =
+            localStorage.getItem("userName");
+
+        const userEmail =
+            localStorage.getItem("userEmail");
+
+
+        const postBox =
+            document.getElementById("postBox");
+
+        const loginRequired =
+            document.getElementById("loginRequired");
+
+        const form =
+            document.getElementById("productForm");
+
+        const message =
+            document.getElementById("message");
+
+        const imageInput =
+            document.getElementById("image");
+
+        const preview =
+            document.getElementById("preview");
+
+        const sellerNameInput =
+            document.getElementById("sellerName");
+
+
+        /* =========================
+           CHECK LOGIN
+        ========================= */
+
+        if (
+            loggedIn !== "true" ||
+            !userEmail
+        ) {
+
+            postBox.style.display = "none";
+
+            loginRequired.style.display = "block";
+
+        } else {
+
+            sellerNameInput.value =
+                userName || "";
+
+        }
+
+
+        /* =========================
+           IMAGE PREVIEW
+        ========================= */
+
+        imageInput.addEventListener(
+            "change",
+            function() {
+
+                const file =
+                    imageInput.files[0];
+
+                if (!file) {
+
+                    preview.style.display =
+                        "none";
+
+                    return;
+
+                }
+
+
+                /* LIMIT IMAGE SIZE */
+
+                if (
+                    file.size >
+                    700 * 1024
+                ) {
+
+                    message.textContent =
+                        "Please choose an image smaller than 700 KB.";
+
+                    message.style.color =
+                        "red";
+
+                    imageInput.value = "";
+
+                    preview.style.display =
+                        "none";
+
+                    return;
+
+                }
+
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onload =
+                    function(event) {
+
+                        preview.src =
+                            event.target.result;
+
+                        preview.style.display =
+                            "block";
+
+                    };
+
+
+                reader.readAsDataURL(file);
+
+            }
+        );
+
+
+        /* =========================
+           POST PRODUCT
+        ========================= */
+
+        form.addEventListener(
+            "submit",
+            function(event) {
+
+                event.preventDefault();
+
+
+                if (
+                    loggedIn !== "true" ||
+                    !userEmail
+                ) {
+
+                    message.textContent =
+                        "Please login first.";
+
+                    message.style.color =
+                        "red";
+
+                    return;
+
+                }
+
+
+                const name =
+                    document
+                        .getElementById("productName")
+                        .value
+                        .trim();
+
+
+                const price =
+                    document
+                        .getElementById("price")
+                        .value
+                        .trim();
+
+
+                const category =
+                    document
+                        .getElementById("category")
+                        .value;
+
+
+                const description =
+                    document
+                        .getElementById("description")
+                        .value
+                        .trim();
+
+
+                const sellerName =
+                    sellerNameInput
+                        .value
+                        .trim();
+
+
+                const phone =
+                    document
+                        .getElementById("phone")
+                        .value
+                        .trim();
+
+
+                const imageFile =
+                    imageInput.files[0];
+
+
+                if (!imageFile) {
+
+                    message.textContent =
+                        "Please choose a product image.";
+
+                    message.style.color =
+                        "red";
+
+                    return;
+
+                }
+
+
+                /* READ IMAGE */
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onload =
+                    function(event) {
+
+
+                        /* =========================
+                           CREATE PRODUCT
+                        ========================= */
+
+                        const product = {
+
+                            id:
+                                Date.now().toString(),
+
+                            name:
+                                name,
+
+                            price:
+                                price,
+
+                            category:
+                                category,
+
+                            description:
+                                description,
+
+                            image:
+                                event.target.result,
+
+                            sellerName:
+                                sellerName,
+
+                            phone:
+                                phone,
+
+                            sellerEmail:
+                                userEmail,
+
+                            createdAt:
+                                new Date().toISOString()
+
+                        };
+
+
+                        /* =========================
+                           GET OLD PRODUCTS
+                        ========================= */
+
+                        let products = [];
+
+
+                        try {
+
+                            const saved =
+                                localStorage.getItem(
+                                    "products"
+                                );
+
+
+                            if (saved) {
+
+                                products =
+                                    JSON.parse(saved);
+
+                            }
+
+
+                            if (
+                                !Array.isArray(
+                                    products
+                                )
+                            ) {
+
+                                products = [];
+
+                            }
+
+                        } catch (error) {
+
+                            products = [];
+
+                        }
+
+
+                        /* =========================
+                           ADD PRODUCT
+                        ========================= */
+
+                        products.push(product);
+
+
+                        /* =========================
+                           SAVE PRODUCT
+                        ========================= */
+
+                        try {
+
+                            localStorage.setItem(
+                                "products",
+                                JSON.stringify(products)
+                            );
+
+
+                            /*
+                             * SAVE LAST POSTED PRODUCT
+                             */
+
+                            localStorage.setItem(
+                                "lastPostedProductId",
+                                product.id
+                            );
+
+
+                            message.textContent =
+                                "Product posted successfully!";
+
+                            message.style.color =
+                                "green";
+
+
+                            /*
+                             * GO TO MY PRODUCTS
+                             */
+
+                            setTimeout(
+                                function() {
+
+                                    window.location.replace(
+                                        "my-products.html"
+                                    );
+
+                                },
+                                800
+                            );
+
+
+                        } catch (error) {
+
+                            message.textContent =
+                                "Could not save product. " +
+                                "Your browser storage may be full.";
+
+                            message.style.color =
+                                "red";
+
+                        }
+
+                    };
+
+
+                reader.onerror =
+                    function() {
+
+                        message.textContent =
+                            "Could not read the image.";
+
+                        message.style.color =
+                            "red";
+
+                    };
+
+
+                reader.readAsDataURL(
+                    imageFile
+                );
+
+            }
+        );
+
+
+        /* =========================
+           CANCEL
+        ========================= */
+
+        document
+            .getElementById("backButton")
+            .addEventListener(
+                "click",
+                function() {
+
+                    window.location.href =
+                        "products.html";
+
+                }
+            );
+
+    </script>
+
+</body>
+
+</html>

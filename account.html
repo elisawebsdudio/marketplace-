@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>My Account - MarketPlace</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7f6;
+}
+
+nav {
+    background: #087f5b;
+    padding: 15px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 5px;
+    font-weight: bold;
+}
+
+.container {
+    width: 92%;
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+.account-box {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+}
+
+h1 {
+    text-align: center;
+    color: #087f5b;
+}
+
+.info {
+    background: #e8fff7;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.info p {
+    margin: 10px 0;
+}
+
+.button {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 7px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.products-button {
+    background: #087f5b;
+    color: white;
+}
+
+.post-button {
+    background: #f4a261;
+    color: white;
+}
+
+.logout-button {
+    background: #d62828;
+    color: white;
+}
+
+.login-button {
+    background: #087f5b;
+    color: white;
+}
+
+#message {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+
+/* =========================
+   LOGOUT POPUP
+========================= */
+
+.modal {
+    display: none;
+
+    position: fixed;
+
+    z-index: 9999;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0,0,0,0.55);
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 400px;
+
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 12px;
+
+    text-align: center;
+
+    box-shadow:
+        0 5px 25px
+        rgba(0,0,0,0.3);
+}
+
+.modal-box h2 {
+    margin-top: 0;
+    color: #d62828;
+}
+
+.modal-box p {
+    color: #444;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    flex: 1;
+
+    padding: 13px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+.cancel-logout {
+    background: #777;
+    color: white;
+}
+
+.confirm-logout {
+    background: #d62828;
+    color: white;
+}
+
+.cancel-logout:hover {
+    background: #666;
+}
+
+.confirm-logout:hover {
+    background: #b51f1f;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 500px) {
+
+    nav {
+        padding: 10px 5px;
+    }
+
+    nav a {
+        font-size: 13px;
+        margin: 2px;
+    }
+
+    .account-box {
+        padding: 22px;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+    }
+
+    .modal-buttons button {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     NAVIGATION
+========================= -->
+
+<nav>
+
+<a href="index.html">
+Home
+</a>
+
+<a href="products.html">
+Products
+</a>
+
+<a href="post-products.html">
+Post Product
+</a>
+
+<a href="favorites.html">
+Favorites
+</a>
+
+<a href="my-products.html">
+My Products
+</a>
+
+<a href="account.html">
+My Account
+</a>
+
+</nav>
+
+
+<!-- =========================
+     ACCOUNT
+========================= -->
+
+<div class="container">
+
+<div class="account-box">
+
+<h1>
+👤 My Account
+</h1>
+
+
+<div id="accountContent"></div>
+
+
+<p id="message"></p>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     LOGOUT POPUP
+========================= -->
+
+<div
+    id="logoutModal"
+    class="modal"
+>
+
+<div class="modal-box">
+
+<h2>
+🚪 Logout?
+</h2>
+
+<p>
+Are you sure you want to log out
+of your MarketPlace account?
+</p>
+
+
+<div class="modal-buttons">
+
+<button
+    type="button"
+    id="cancelLogout"
+    class="cancel-logout"
+>
+Cancel
+</button>
+
+
+<button
+    type="button"
+    id="confirmLogout"
+    class="confirm-logout"
+>
+Yes, Logout
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+
+/* =========================
+   USER INFORMATION
+========================= */
+
+const loggedIn =
+localStorage.getItem(
+    "loggedIn"
+);
+
+const userName =
+localStorage.getItem(
+    "userName"
+);
+
+const userEmail =
+localStorage.getItem(
+    "userEmail"
+);
+
+
+const accountContent =
+document.getElementById(
+    "accountContent"
+);
+
+
+const message =
+document.getElementById(
+    "message"
+);
+
+
+/* =========================
+   LOGOUT POPUP
+========================= */
+
+const logoutModal =
+document.getElementById(
+    "logoutModal"
+);
+
+
+const cancelLogout =
+document.getElementById(
+    "cancelLogout"
+);
+
+
+const confirmLogout =
+document.getElementById(
+    "confirmLogout"
+);
+
+
+/* =========================
+   CHECK LOGIN
+========================= */
+
+if (
+    loggedIn !== "true" ||
+    !userEmail
+) {
+
+
+    accountContent.innerHTML = `
+
+        <h2>
+            You are not logged in.
+        </h2>
+
+        <p>
+            Please login to access
+            your account.
+        </p>
+
+        <a
+            href="login.html"
+            class="button login-button"
+        >
+            🔐 Login
+        </a>
+
+    `;
+
+} else {
+
+
+    /* =========================
+       SHOW ACCOUNT
+    ========================= */
+
+    accountContent.innerHTML = `
+
+        <div class="info">
+
+            <p>
+
+                <strong>
+                    Name:
+                </strong>
+
+                ${userName || "Not provided"}
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Email:
+                </strong>
+
+                ${userEmail}
+
+            </p>
+
+        </div>
+
+
+        <a
+            href="my-products.html"
+            class="button products-button"
+        >
+            📦 My Products
+        </a>
+
+
+        <a
+            href="post-products.html"
+            class="button post-button"
+        >
+            ➕ Post Product
+        </a>
+
+
+        <button
+            type="button"
+            id="logoutButton"
+            class="button logout-button"
+        >
+            🚪 Logout
+        </button>
+
+    `;
+
+
+    /* =========================
+       GET LOGOUT BUTTON
+    ========================= */
+
+    const logoutButton =
+        document.getElementById(
+            "logoutButton"
+        );
+
+
+    /* =========================
+       OPEN POPUP
+    ========================= */
+
+    logoutButton.addEventListener(
+        "click",
+        function() {
+
+            logoutModal.style.display =
+                "flex";
+
+        }
+    );
+
+
+    /* =========================
+       CANCEL LOGOUT
+    ========================= */
+
+    cancelLogout.addEventListener(
+        "click",
+        function() {
+
+            logoutModal.style.display =
+                "none";
+
+        }
+    );
+
+
+    /* =========================
+       CLICK OUTSIDE POPUP
+    ========================= */
+
+    logoutModal.addEventListener(
+        "click",
+        function(event) {
+
+            if (
+                event.target ===
+                logoutModal
+            ) {
+
+                logoutModal.style.display =
+                    "none";
+
+            }
+
+        }
+    );
+
+
+    /* =========================
+       CONFIRM LOGOUT
+    ========================= */
+
+    confirmLogout.addEventListener(
+        "click",
+        function() {
+
+
+            /* REMOVE LOGIN SESSION */
+
+            localStorage.removeItem(
+                "loggedIn"
+            );
+
+            localStorage.removeItem(
+                "userId"
+            );
+
+            localStorage.removeItem(
+                "userName"
+            );
+
+            localStorage.removeItem(
+                "userEmail"
+            );
+
+
+            /* CLOSE POPUP */
+
+            logoutModal.style.display =
+                "none";
+
+
+            /* SHOW MESSAGE */
+
+            message.textContent =
+                "You have been logged out successfully.";
+
+            message.style.color =
+                "#087f5b";
+
+
+            /* RETURN HOME */
+
+            setTimeout(
+                function() {
+
+                    window.location.href =
+                        "index.html";
+
+                },
+                700
+            );
+
+        }
+    );
+
+}
+
+</script>
+
+
+</body>
+
+</html>

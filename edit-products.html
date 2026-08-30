@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Product - MarketPlace</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f6;
+        }
+
+        nav {
+            background: #087f5b;
+            padding: 15px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 7px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 600px;
+            background: white;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #087f5b;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        #currentImage {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-top: 15px;
+            border-radius: 8px;
+            background: #eee;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background: #087f5b;
+            color: white;
+        }
+
+        .back-button {
+            background: #777;
+            color: white;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .error-box {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error-box a {
+            color: #087f5b;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <nav>
+
+        <a href="index.html">Home</a>
+
+        <a href="products.html">Products</a>
+
+        <a href="post-products.html">Post Product</a>
+
+        <a href="my-products.html">My Products</a>
+
+        <a href="account.html">My Account</a>
+
+    </nav>
+
+
+    <div class="container">
+
+        <h1>
+            Edit Product
+        </h1>
+
+
+        <div id="message"></div>
+
+
+        <form id="editForm">
+
+            <label for="productName">
+                Product Name
+            </label>
+
+            <input
+                type="text"
+                id="productName"
+                required
+            >
+
+
+            <label for="price">
+                Price
+            </label>
+
+            <input
+                type="text"
+                id="price"
+                required
+            >
+
+
+            <label for="category">
+                Category
+            </label>
+
+            <select
+                id="category"
+                required
+            >
+
+                <option value="">
+                    Select category
+                </option>
+
+                <option value="Clothes">
+                    Clothes
+                </option>
+
+                <option value="Shoes">
+                    Shoes
+                </option>
+
+                <option value="Electronics">
+                    Electronics
+                </option>
+
+                <option value="Phones">
+                    Phones
+                </option>
+
+                <option value="Furniture">
+                    Furniture
+                </option>
+
+                <option value="Other">
+                    Other
+                </option>
+
+            </select>
+
+
+            <label for="image">
+                Change Product Image
+            </label>
+
+            <input
+                type="file"
+                id="image"
+                accept="image/*"
+            >
+
+
+            <img
+                id="currentImage"
+                alt="Current Product Image"
+            >
+
+
+            <label for="description">
+                Description
+            </label>
+
+            <textarea
+                id="description"
+                required
+            ></textarea>
+
+
+            <label for="sellerName">
+                Seller Name
+            </label>
+
+            <input
+                type="text"
+                id="sellerName"
+                required
+            >
+
+
+            <label for="phone">
+                Phone Number
+            </label>
+
+            <input
+                type="tel"
+                id="phone"
+                required
+            >
+
+
+            <button
+                type="submit"
+                class="save-button"
+            >
+                Save Changes
+            </button>
+
+
+            <button
+                type="button"
+                class="back-button"
+                id="backButton"
+            >
+                Cancel
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <script>
+
+        const form =
+            document.getElementById("editForm");
+
+        const message =
+            document.getElementById("message");
+
+        const currentImage =
+            document.getElementById("currentImage");
+
+        const imageInput =
+            document.getElementById("image");
+
+
+        /*
+         * GET PRODUCT ID
+         */
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const id =
+            params.get("id");
+
+
+        /*
+         * CHECK LOGIN
+         */
+
+        const loggedIn =
+            localStorage.getItem("loggedIn");
+
+        const userEmail =
+            localStorage.getItem("userEmail");
+
+
+        if (
+            loggedIn !== "true" ||
+            !userEmail
+        ) {
+
+            form.style.display = "none";
+
+            message.innerHTML = `
+
+                <div class="error-box">
+
+                    <h2>
+                        Login Required
+                    </h2>
+
+                    <p>
+                        Please login before
+                        editing a product.
+                    </p>
+
+                    <a href="login.html">
+                        Login
+                    </a>
+
+                </div>
+
+            `;
+
+        } else {
+
+
+            /*
+             * GET PRODUCTS
+             */
+
+            let products = [];
+
+            try {
+
+                const saved =
+                    localStorage.getItem(
+                        "products"
+                    );
+
+                if (saved) {
+
+                    products =
+                        JSON.parse(saved);
+
+                }
+
+            } catch (error) {
+
+                products = [];
+
+            }
+
+
+            /*
+             * CHECK PRODUCTS
+             */
+
+            if (!Array.isArray(products)) {
+
+                products = [];
+
+            }
+
+
+            const index =
+                Number(id);
+
+
+            /*
+             * CHECK ID
+             */
+
+            if (
+                id === null ||
+                !Number.isInteger(index) ||
+                index < 0 ||
+                index >= products.length
+            ) {
+
+                form.style.display = "none";
+
+                message.innerHTML = `
+
+                    <div class="error-box">
+
+                        <h2>
+                            Product Not Found
+                        </h2>
+
+                        <p>
+                            The product you are
+                            trying to edit does not exist.
+                        </p>
+
+                        <a href="my-products.html">
+                            Back to My Products
+                        </a>
+
+                    </div>
+
+                `;
+
+            } else {
+
+                const product =
+                    products[index];
+
+
+                /*
+                 * CHECK SELLER
+                 */
+
+                if (
+                    product.sellerEmail &&
+                    String(product.sellerEmail)
+                        .toLowerCase() !==
+                    String(userEmail)
+                        .toLowerCase()
+                ) {
+
+                    form.style.display = "none";
+
+                    message.innerHTML = `
+
+                        <div class="error-box">
+
+                            <h2>
+                                Access Denied
+                            </h2>
+
+                            <p>
+                                You can only edit
+                                your own products.
+                            </p>
+
+                            <a href="my-products.html">
+                                Back to My Products
+                            </a>
+
+                        </div>
+
+                    `;
+
+                } else {
+
+
+                    /*
+                     * FILL FORM
+                     */
+
+                    document
+                        .getElementById("productName")
+                        .value =
+                            product.name || "";
+
+
+                    document
+                        .getElementById("price")
+                        .value =
+                            product.price || "";
+
+
+                    document
+                        .getElementById("category")
+                        .value =
+                            product.category || "";
+
+
+                    document
+                        .getElementById("description")
+                        .value =
+                            product.description || "";
+
+
+                    document
+                        .getElementById("sellerName")
+                        .value =
+                            product.sellerName || "";
+
+
+                    document
+                        .getElementById("phone")
+                        .value =
+                            product.phone || "";
+
+
+                    if (product.image) {
+
+                        currentImage.src =
+                            product.image;
+
+                    }
+
+
+                    /*
+                     * NEW IMAGE PREVIEW
+                     */
+
+                    imageInput.addEventListener(
+                        "change",
+                        function() {
+
+                            const file =
+                                imageInput.files[0];
+
+                            if (!file) {
+                                return;
+                            }
+
+                            if (
+                                file.size >
+                                1024 * 1024
+                            ) {
+
+                                message.textContent =
+                                    "Image must be smaller than 1 MB.";
+
+                                message.style.color =
+                                    "red";
+
+                                imageInput.value =
+                                    "";
+
+                                return;
+
+                            }
+
+
+                            const reader =
+                                new FileReader();
+
+
+                            reader.onload =
+                                function(event) {
+
+                                    currentImage.src =
+                                        event.target.result;
+
+                                };
+
+
+                            reader.readAsDataURL(
+                                file
+                            );
+
+                        }
+                    );
+
+
+                    /*
+                     * SAVE CHANGES
+                     */
+
+                    form.addEventListener(
+                        "submit",
+                        function(event) {
+
+                            event.preventDefault();
+
+
+                            product.name =
+                                document
+                                .getElementById(
+                                    "productName"
+                                )
+                                .value
+                                .trim();
+
+
+                            product.price =
+                                document
+                                .getElementById(
+                                    "price"
+                                )
+                                .value
+                                .trim();
+
+
+                            product.category =
+                                document
+                                .getElementById(
+                                    "category"
+                                )
+                                .value;
+
+
+                            product.description =
+                                document
+                                .getElementById(
+                                    "description"
+                                )
+                                .value
+                                .trim();
+
+
+                            product.sellerName =
+                                document
+                                .getElementById(
+                                    "sellerName"
+                                )
+                                .value
+                                .trim();
+
+
+                            product.phone =
+                                document
+                                .getElementById(
+                                    "phone"
+                                )
+                                .value
+                                .trim();
+
+
+                            /*
+                             * KEEP SELLER EMAIL
+                             */
+
+                            product.sellerEmail =
+                                userEmail;
+
+
+                            const file =
+                                imageInput.files[0];
+
+
+                            /*
+                             * SAVE WITH NEW IMAGE
+                             */
+
+                            if (file) {
+
+                                if (
+                                    file.size >
+                                    1024 * 1024
+                                ) {
+
+                                    message.textContent =
+                                        "Image must be smaller than 1 MB.";
+
+                                    message.style.color =
+                                        "red";
+
+                                    return;
+
+                                }
+
+
+                                const reader =
+                                    new FileReader();
+
+
+                                reader.onload =
+                                    function(event) {
+
+                                        product.image =
+                                            event.target.result;
+
+                                        saveProduct();
+
+                                    };
+
+
+                                reader.onerror =
+                                    function() {
+
+                                        message.textContent =
+                                            "Could not read the image.";
+
+                                        message.style.color =
+                                            "red";
+
+                                    };
+
+
+                                reader.readAsDataURL(
+                                    file
+                                );
+
+                            } else {
+
+                                saveProduct();
+
+                            }
+
+                        }
+                    );
+
+
+                    /*
+                     * SAVE PRODUCT FUNCTION
+                     */
+
+                    function saveProduct() {
+
+                        try {
+
+                            localStorage.setItem(
+                                "products",
+                                JSON.stringify(
+                                    products
+                                )
+                            );
+
+
+                            message.textContent =
+                                "Product updated successfully!";
+
+                            message.style.color =
+                                "green";
+
+
+                            setTimeout(
+                                function() {
+
+                                    window.location.href =
+                                        "my-products.html";
+
+                                },
+                                1000
+                            );
+
+                        } catch (error) {
+
+                            message.textContent =
+                                "SAVE ERROR: " +
+                                error.message;
+
+                            message.style.color =
+                                "red";
+
+                        }
+
+                    }
+
+
+                    /*
+                     * CANCEL
+                     */
+
+                    document
+                        .getElementById(
+                            "backButton"
+                        )
+                        .addEventListener(
+                            "click",
+                            function() {
+
+                                window.location.href =
+                                    "my-products.html";
+
+                            }
+                        );
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

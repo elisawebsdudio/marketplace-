@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Favorites - MarketPlace</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7f6;
+}
+
+nav {
+    background: #087f5b;
+    padding: 15px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 5px;
+    font-weight: bold;
+}
+
+.container {
+    width: 94%;
+    max-width: 1100px;
+    margin: 30px auto;
+}
+
+h1 {
+    text-align: center;
+    color: #087f5b;
+}
+
+#message {
+    text-align: center;
+    font-weight: bold;
+    margin: 15px;
+}
+
+#favoritesContainer {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+}
+
+.product-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: #eee;
+}
+
+.product-info {
+    padding: 18px;
+}
+
+.product-info h2 {
+    color: #087f5b;
+    margin-top: 0;
+}
+
+.price {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.category {
+    display: inline-block;
+    background: #e8fff7;
+    color: #087f5b;
+    padding: 6px 10px;
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.details-button {
+    background: #087f5b;
+    color: white;
+}
+
+.remove-button {
+    background: #d62828;
+    color: white;
+}
+
+.empty {
+    background: white;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 12px;
+    grid-column: 1 / -1;
+}
+
+.empty h2 {
+    color: #087f5b;
+}
+
+.empty a {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: #087f5b;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<nav>
+
+<a href="index.html">Home</a>
+
+<a href="products.html">Products</a>
+
+<a href="post-products.html">Post Product</a>
+
+<a href="favorites.html">Favorites</a>
+
+<a href="my-products.html">My Products</a>
+
+<a href="account.html">My Account</a>
+
+</nav>
+
+
+<div class="container">
+
+<h1>
+❤️ My Favorites
+</h1>
+
+<p id="message"></p>
+
+<div id="favoritesContainer"></div>
+
+</div>
+
+
+<script>
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const favoritesContainer =
+document.getElementById(
+    "favoritesContainer"
+);
+
+const message =
+document.getElementById(
+    "message"
+);
+
+
+/* =========================
+   GET PRODUCTS
+========================= */
+
+let products = [];
+
+try {
+
+    const savedProducts =
+        localStorage.getItem(
+            "products"
+        );
+
+    if (savedProducts) {
+
+        products =
+            JSON.parse(
+                savedProducts
+            );
+
+    }
+
+    if (!Array.isArray(products)) {
+
+        products = [];
+
+    }
+
+} catch (error) {
+
+    products = [];
+
+}
+
+
+/* =========================
+   GET FAVORITES
+========================= */
+
+let favorites = [];
+
+try {
+
+    const savedFavorites =
+        localStorage.getItem(
+            "favorites"
+        );
+
+    if (savedFavorites) {
+
+        favorites =
+            JSON.parse(
+                savedFavorites
+            );
+
+    }
+
+    if (!Array.isArray(favorites)) {
+
+        favorites = [];
+
+    }
+
+} catch (error) {
+
+    favorites = [];
+
+}
+
+
+/* =========================
+   DISPLAY FAVORITES
+========================= */
+
+function displayFavorites() {
+
+    favoritesContainer.innerHTML = "";
+
+    if (favorites.length === 0) {
+
+        favoritesContainer.innerHTML = `
+
+            <div class="empty">
+
+                <h2>
+                    No Favorite Products
+                </h2>
+
+                <p>
+                    Products you save as
+                    favorites will appear here.
+                </p>
+
+                <a href="products.html">
+                    Browse Products
+                </a>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    let foundProduct = false;
+
+
+    favorites.forEach(
+        function(favoriteId) {
+
+            const index =
+                products.findIndex(
+                    function(product) {
+
+                        return String(
+                            product.id
+                        ) === String(
+                            favoriteId
+                        );
+
+                    }
+                );
+
+
+            if (index === -1) {
+                return;
+            }
+
+
+            foundProduct = true;
+
+
+            const product =
+                products[index];
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "product-card";
+
+
+            card.innerHTML = `
+
+                <img
+                    src="${product.image || ""}"
+                    alt="${product.name || "Product"}"
+                >
+
+                <div class="product-info">
+
+                    <h2>
+                        ${product.name || "Product"}
+                    </h2>
+
+                    <p class="price">
+                        ${product.price || "Price not provided"}
+                    </p>
+
+                    <p>
+
+                        <span class="category">
+                            ${product.category || "Other"}
+                        </span>
+
+                    </p>
+
+                    <p>
+                        ${product.description || "No description available."}
+                    </p>
+
+                    <a
+                        href="product-details.html?id=${index}"
+                        class="button details-button"
+                    >
+                        👁️ View Details
+                    </a>
+
+                    <button
+                        type="button"
+                        class="button remove-button"
+                    >
+                        ❤️ Remove Favorite
+                    </button>
+
+                </div>
+
+            `;
+
+
+            favoritesContainer.appendChild(
+                card
+            );
+
+
+            /* =========================
+               REMOVE FAVORITE
+            ========================= */
+
+            const removeButton =
+                card.querySelector(
+                    ".remove-button"
+                );
+
+
+            removeButton.addEventListener(
+                "click",
+                function() {
+
+                    favorites =
+                        favorites.filter(
+                            function(id) {
+
+                                return String(id) !==
+                                    String(favoriteId);
+
+                            }
+                        );
+
+
+                    localStorage.setItem(
+                        "favorites",
+                        JSON.stringify(
+                            favorites
+                        )
+                    );
+
+
+                    message.textContent =
+                        "Removed from favorites.";
+
+                    message.style.color =
+                        "#d62828";
+
+
+                    displayFavorites();
+
+                }
+            );
+
+        }
+    );
+
+
+    if (!foundProduct) {
+
+        favorites = [];
+
+        localStorage.setItem(
+            "favorites",
+            JSON.stringify(
+                favorites
+            )
+        );
+
+
+        favoritesContainer.innerHTML = `
+
+            <div class="empty">
+
+                <h2>
+                    No Favorite Products
+                </h2>
+
+                <p>
+                    Your saved products are
+                    no longer available.
+                </p>
+
+                <a href="products.html">
+                    Browse Products
+                </a>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+displayFavorites();
+
+</script>
+
+</body>
+
+</html>

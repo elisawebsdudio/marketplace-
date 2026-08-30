@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login - MarketPlace</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f6;
+        }
+
+        nav {
+            background: #087f5b;
+            padding: 15px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 6px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 430px;
+            margin: 40px auto;
+        }
+
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #087f5b;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 22px;
+            background: #087f5b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #066b4d;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: #087f5b;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <nav>
+
+        <a href="index.html">
+            Home
+        </a>
+
+        <a href="products.html">
+            Products
+        </a>
+
+        <a href="login.html">
+            Login
+        </a>
+
+        <a href="register.html">
+            Register
+        </a>
+
+    </nav>
+
+
+    <div class="container">
+
+        <div class="box">
+
+            <h1>
+                Login
+            </h1>
+
+
+            <form id="loginForm">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    id="loginButton"
+                >
+                    Login
+                </button>
+
+            </form>
+
+
+            <p id="message"></p>
+
+
+            <div class="register-link">
+
+                Don't have an account?
+
+                <a href="register.html">
+                    Create Account
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+
+        /* =========================
+           GET ELEMENTS
+        ========================= */
+
+        const form =
+            document.getElementById(
+                "loginForm"
+            );
+
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+
+        const loginButton =
+            document.getElementById(
+                "loginButton"
+            );
+
+
+        /* =========================
+           LOGIN
+        ========================= */
+
+        form.addEventListener(
+            "submit",
+            function(event) {
+
+                event.preventDefault();
+
+
+                /* GET EMAIL */
+
+                const email =
+                    document.getElementById(
+                        "email"
+                    )
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+
+                /* GET PASSWORD */
+
+                const password =
+                    document.getElementById(
+                        "password"
+                    ).value;
+
+
+                /* =========================
+                   GET REGISTERED USERS
+                ========================= */
+
+                let users = [];
+
+
+                try {
+
+                    const savedUsers =
+                        localStorage.getItem(
+                            "users"
+                        );
+
+
+                    if (savedUsers) {
+
+                        users =
+                            JSON.parse(
+                                savedUsers
+                            );
+
+                    }
+
+
+                    if (
+                        !Array.isArray(
+                            users
+                        )
+                    ) {
+
+                        users = [];
+
+                    }
+
+                } catch (error) {
+
+                    message.textContent =
+                        "Could not read account information.";
+
+                    message.style.color =
+                        "red";
+
+                    return;
+
+                }
+
+
+                /* =========================
+                   FIND USER
+                ========================= */
+
+                const user =
+                    users.find(
+                        function(account) {
+
+                            return (
+
+                                String(
+                                    account.email || ""
+                                )
+                                .trim()
+                                .toLowerCase() ===
+                                email
+
+                                &&
+
+                                String(
+                                    account.password || ""
+                                ) ===
+                                String(
+                                    password
+                                )
+
+                            );
+
+                        }
+                    );
+
+
+                /* =========================
+                   LOGIN FAILED
+                ========================= */
+
+                if (!user) {
+
+                    message.textContent =
+                        "Incorrect email or password.";
+
+                    message.style.color =
+                        "red";
+
+                    return;
+
+                }
+
+
+                /* =========================
+                   SAVE LOGIN SESSION
+                ========================= */
+
+                localStorage.setItem(
+                    "loggedIn",
+                    "true"
+                );
+
+
+                localStorage.setItem(
+                    "userId",
+                    String(
+                        user.id || ""
+                    )
+                );
+
+
+                localStorage.setItem(
+                    "userName",
+                    user.name || ""
+                );
+
+
+                localStorage.setItem(
+                    "userEmail",
+                    user.email || email
+                );
+
+
+                /* =========================
+                   SHOW SUCCESS
+                ========================= */
+
+                message.textContent =
+                    "Login successful!";
+
+                message.style.color =
+                    "green";
+
+
+                loginButton.disabled =
+                    true;
+
+
+                loginButton.textContent =
+                    "Logging in...";
+
+
+                /* =========================
+                   GO TO ACCOUNT
+                ========================= */
+
+                window.location.href =
+                    "account.html";
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>
