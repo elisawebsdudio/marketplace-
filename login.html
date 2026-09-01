@@ -72,23 +72,56 @@
             font-size: 15px;
         }
 
-        .show-password {
+        /* PASSWORD BOX */
+
+        .password-box {
+            position: relative;
+            margin-top: 7px;
+        }
+
+        .password-box input {
+            width: 100%;
+            padding: 12px 45px 12px 12px;
+            margin-top: 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        /* EYE BUTTON */
+
+        .eye-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+
+            width: 35px;
+            height: 35px;
+
+            padding: 0;
+            margin: 0;
+
+            background: transparent;
+            color: #555;
+
+            border: none;
+            border-radius: 50%;
+
+            font-size: 19px;
+            cursor: pointer;
+
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-            font-weight: normal;
-            cursor: pointer;
+            justify-content: center;
         }
 
-        .show-password input {
-            width: 18px;
-            height: 18px;
-            margin: 0;
-            cursor: pointer;
+        .eye-button:hover {
+            background: #f0f0f0;
+            color: #087f5b;
         }
 
-        button {
+        button.login-button {
             width: 100%;
             padding: 13px;
             margin-top: 22px;
@@ -100,7 +133,7 @@
             cursor: pointer;
         }
 
-        button:hover {
+        button.login-button:hover {
             background: #066b4d;
         }
 
@@ -182,34 +215,33 @@
                     Password
                 </label>
 
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Enter your password"
-                    required
-                >
-
-
-                <!-- SHOW PASSWORD -->
-
-                <label
-                    class="show-password"
-                    for="showPassword"
-                >
+                <div class="password-box">
 
                     <input
-                        type="checkbox"
-                        id="showPassword"
+                        type="password"
+                        id="password"
+                        placeholder="Enter your password"
+                        required
                     >
 
-                    Show password
+                    <button
+                        type="button"
+                        class="eye-button"
+                        id="togglePassword"
+                        aria-label="Show password"
+                    >
+                        👁️
+                    </button>
 
-                </label>
+                </div>
 
 
-                <!-- LOGIN BUTTON -->
+                <!-- LOGIN -->
 
-                <button type="submit">
+                <button
+                    type="submit"
+                    class="login-button"
+                >
                     Login
                 </button>
 
@@ -260,9 +292,9 @@
             );
 
 
-        const showPassword =
+        const togglePassword =
             document.getElementById(
-                "showPassword"
+                "togglePassword"
             );
 
 
@@ -270,21 +302,38 @@
            SHOW / HIDE PASSWORD
         ========================= */
 
-        showPassword.addEventListener(
+        togglePassword.addEventListener(
             "click",
             function() {
 
                 if (
-                    showPassword.checked
+                    passwordInput.type ===
+                    "password"
                 ) {
 
                     passwordInput.type =
                         "text";
 
+                    togglePassword.textContent =
+                        "🙈";
+
+                    togglePassword.setAttribute(
+                        "aria-label",
+                        "Hide password"
+                    );
+
                 } else {
 
                     passwordInput.type =
                         "password";
+
+                    togglePassword.textContent =
+                        "👁️";
+
+                    togglePassword.setAttribute(
+                        "aria-label",
+                        "Show password"
+                    );
 
                 }
 
@@ -365,7 +414,8 @@
                             return (
 
                                 String(
-                                    account.email || ""
+                                    account.email ||
+                                    ""
                                 )
                                 .toLowerCase() ===
                                 email
