@@ -61,10 +61,20 @@
             font-weight: bold;
         }
 
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="input"] {
+        .input-box {
+            position: relative;
+            margin-top: 7px;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 12px 45px 12px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .normal-input {
             width: 100%;
             padding: 12px;
             margin-top: 7px;
@@ -73,23 +83,38 @@
             font-size: 15px;
         }
 
-        .show-password {
+        .eye-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+
+            width: 35px;
+            height: 35px;
+
+            padding: 0;
+            margin: 0;
+
+            background: transparent;
+            color: #555;
+
+            border: none;
+            border-radius: 50%;
+
+            font-size: 18px;
+            cursor: pointer;
+
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-            font-weight: normal;
-            cursor: pointer;
+            justify-content: center;
         }
 
-        .show-password input {
-            width: 18px;
-            height: 18px;
-            margin: 0;
-            cursor: pointer;
+        .eye-button:hover {
+            background: #f0f0f0;
+            color: #087f5b;
         }
 
-        button {
+        .register-button {
             width: 100%;
             padding: 13px;
             margin-top: 22px;
@@ -101,7 +126,7 @@
             cursor: pointer;
         }
 
-        button:hover {
+        .register-button:hover {
             background: #066b4d;
         }
 
@@ -123,7 +148,11 @@
         }
 
     </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- SUPABASE -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 
@@ -132,13 +161,21 @@
 
     <nav>
 
-        <a href="index.html">Home</a>
+        <a href="index.html">
+            Home
+        </a>
 
-        <a href="products.html">Products</a>
+        <a href="products.html">
+            Products
+        </a>
 
-        <a href="login.html">Login</a>
+        <a href="login.html">
+            Login
+        </a>
 
-        <a href="register.html">Register</a>
+        <a href="register.html">
+            Register
+        </a>
 
     </nav>
 
@@ -155,7 +192,7 @@
             <form id="registerForm">
 
 
-                <!-- FULL NAME -->
+                <!-- NAME -->
 
                 <label for="name">
                     Full Name
@@ -164,6 +201,7 @@
                 <input
                     type="text"
                     id="name"
+                    class="normal-input"
                     placeholder="Enter your full name"
                     required
                 >
@@ -178,6 +216,7 @@
                 <input
                     type="email"
                     id="email"
+                    class="normal-input"
                     placeholder="Enter your email"
                     required
                 >
@@ -189,28 +228,26 @@
                     Password
                 </label>
 
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Create a password"
-                    minlength="6"
-                    required
-                >
-
-
-                <label
-                    class="show-password"
-                    for="showPassword"
-                >
+                <div class="input-box">
 
                     <input
-                        type="checkbox"
-                        id="showPassword"
+                        type="password"
+                        id="password"
+                        placeholder="Create a password"
+                        minlength="6"
+                        required
                     >
 
-                    Show password
+                    <button
+                        type="button"
+                        class="eye-button"
+                        id="togglePassword"
+                        aria-label="Show password"
+                    >
+                        👁️
+                    </button>
 
-                </label>
+                </div>
 
 
                 <!-- CONFIRM PASSWORD -->
@@ -219,35 +256,38 @@
                     Confirm Password
                 </label>
 
-                <input
-                    type="password"
-                    id="confirmPassword"
-                    placeholder="Confirm your password"
-                    minlength="6"
-                    required
-                >
-
-
-                <label
-                    class="show-password"
-                    for="showConfirmPassword"
-                >
+                <div class="input-box">
 
                     <input
-                        type="checkbox"
-                        id="showConfirmPassword"
+                        type="password"
+                        id="confirmPassword"
+                        placeholder="Confirm your password"
+                        minlength="6"
+                        required
                     >
 
-                    Show password
+                    <button
+                        type="button"
+                        class="eye-button"
+                        id="toggleConfirmPassword"
+                        aria-label="Show password"
+                    >
+                        👁️
+                    </button>
 
-                </label>
+                </div>
 
 
-                <!-- REGISTER BUTTON -->
+                <!-- REGISTER -->
 
-                <button type="submit">
+                <button
+                    type="submit"
+                    class="register-button"
+                    id="registerButton"
+                >
                     Register
                 </button>
+
 
             </form>
 
@@ -272,45 +312,119 @@
 
     <script>
 
+        /* =========================
+           SUPABASE CONNECTION
+        ========================= */
+
+        const SUPABASE_URL =
+            "https://zofngbuatccapcypmvkf.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY =
+            "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
+
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY
+            );
+
 
         /* =========================
-           GET ELEMENTS
+           ELEMENTS
         ========================= */
 
         const form =
-            document.getElementById("registerForm");
+            document.getElementById(
+                "registerForm"
+            );
 
         const message =
-            document.getElementById("message");
+            document.getElementById(
+                "message"
+            );
 
         const passwordInput =
-            document.getElementById("password");
+            document.getElementById(
+                "password"
+            );
 
         const confirmPasswordInput =
-            document.getElementById("confirmPassword");
+            document.getElementById(
+                "confirmPassword"
+            );
 
-        const showPassword =
-            document.getElementById("showPassword");
+        const togglePassword =
+            document.getElementById(
+                "togglePassword"
+            );
 
-        const showConfirmPassword =
-            document.getElementById("showConfirmPassword");
+        const toggleConfirmPassword =
+            document.getElementById(
+                "toggleConfirmPassword"
+            );
+
+        const registerButton =
+            document.getElementById(
+                "registerButton"
+            );
 
 
         /* =========================
-           SHOW PASSWORD
+           PASSWORD EYE
         ========================= */
 
-        showPassword.addEventListener(
+        togglePassword.addEventListener(
             "click",
             function() {
 
-                if (showPassword.checked) {
+                if (
+                    passwordInput.type ===
+                    "password"
+                ) {
 
-                    passwordInput.type = "text";
+                    passwordInput.type =
+                        "text";
+
+                    togglePassword.textContent =
+                        "🙈";
 
                 } else {
 
-                    passwordInput.type = "password";
+                    passwordInput.type =
+                        "password";
+
+                    togglePassword.textContent =
+                        "👁️";
+
+                }
+
+            }
+        );
+
+
+        toggleConfirmPassword.addEventListener(
+            "click",
+            function() {
+
+                if (
+                    confirmPasswordInput.type ===
+                    "password"
+                ) {
+
+                    confirmPasswordInput.type =
+                        "text";
+
+                    toggleConfirmPassword.textContent =
+                        "🙈";
+
+                } else {
+
+                    confirmPasswordInput.type =
+                        "password";
+
+                    toggleConfirmPassword.textContent =
+                        "👁️";
 
                 }
 
@@ -319,46 +433,28 @@
 
 
         /* =========================
-           SHOW CONFIRM PASSWORD
-        ========================= */
-
-        showConfirmPassword.addEventListener(
-            "click",
-            function() {
-
-                if (showConfirmPassword.checked) {
-
-                    confirmPasswordInput.type = "text";
-
-                } else {
-
-                    confirmPasswordInput.type = "password";
-
-                }
-
-            }
-        );
-
-
-        /* =========================
-           REGISTER ACCOUNT
+           REGISTER
         ========================= */
 
         form.addEventListener(
             "submit",
-            function(event) {
+            async function(event) {
 
                 event.preventDefault();
 
 
                 const name =
-                    document.getElementById("name")
+                    document.getElementById(
+                        "name"
+                    )
                     .value
                     .trim();
 
 
                 const email =
-                    document.getElementById("email")
+                    document.getElementById(
+                        "email"
+                    )
                     .value
                     .trim()
                     .toLowerCase();
@@ -372,10 +468,11 @@
                     confirmPasswordInput.value;
 
 
-                /* CHECK PASSWORDS */
+                /* CHECK PASSWORD */
 
                 if (
-                    password !== confirmPassword
+                    password !==
+                    confirmPassword
                 ) {
 
                     message.textContent =
@@ -389,62 +486,12 @@
                 }
 
 
-                /* GET EXISTING USERS */
-
-                let users = [];
-
-
-                try {
-
-                    const savedUsers =
-                        localStorage.getItem("users");
-
-
-                    if (savedUsers) {
-
-                        users =
-                            JSON.parse(savedUsers);
-
-                    }
-
-
-                    if (
-                        !Array.isArray(users)
-                    ) {
-
-                        users = [];
-
-                    }
-
-                } catch (error) {
-
-                    users = [];
-
-                }
-
-
-                /* CHECK EMAIL */
-
-                const exists =
-                    users.some(
-                        function(user) {
-
-                            return (
-                                String(
-                                    user.email || ""
-                                )
-                                .toLowerCase() ===
-                                email
-                            );
-
-                        }
-                    );
-
-
-                if (exists) {
+                if (
+                    password.length < 6
+                ) {
 
                     message.textContent =
-                        "This email is already registered.";
+                        "Password must be at least 6 characters.";
 
                     message.style.color =
                         "red";
@@ -454,84 +501,116 @@
                 }
 
 
-                /* CREATE USER */
+                /* DISABLE BUTTON */
 
-                const newUser = {
+                registerButton.disabled =
+                    true;
 
-                    id: Date.now(),
+                registerButton.textContent =
+                    "Creating account...";
 
-                    name: name,
-
-                    email: email,
-
-                    password: password
-
-                };
-
-
-                users.push(newUser);
-
-
-                /* SAVE USERS */
 
                 try {
 
-                    localStorage.setItem(
-                        "users",
-                        JSON.stringify(users)
+                    /* CREATE SUPABASE USER */
+
+                    const {
+                        data,
+                        error
+                    } =
+                        await supabaseClient.auth.signUp({
+
+                            email:
+                                email,
+
+                            password:
+                                password,
+
+                            options: {
+
+                                data: {
+
+                                    name:
+                                        name
+
+                                }
+
+                            }
+
+                        });
+
+
+                    if (error) {
+
+                        message.textContent =
+                            error.message;
+
+                        message.style.color =
+                            "red";
+
+                        return;
+
+                    }
+
+
+                    /* SUCCESS */
+
+                    message.textContent =
+                        "Account created successfully! Check your email to confirm your account.";
+
+                    message.style.color =
+                        "green";
+
+
+                    form.reset();
+
+
+                    passwordInput.type =
+                        "password";
+
+                    confirmPasswordInput.type =
+                        "password";
+
+                    togglePassword.textContent =
+                        "👁️";
+
+                    toggleConfirmPassword.textContent =
+                        "👁️";
+
+
+                    /* GO TO LOGIN */
+
+                    setTimeout(
+                        function() {
+
+                            window.location.href =
+                                "login.html";
+
+                        },
+                        2500
                     );
+
 
                 } catch (error) {
 
                     message.textContent =
-                        "Could not create account.";
+                        "Something went wrong. Please try again.";
 
                     message.style.color =
                         "red";
 
-                    return;
+                } finally {
+
+                    registerButton.disabled =
+                        false;
+
+                    registerButton.textContent =
+                        "Register";
 
                 }
-
-
-                /* SUCCESS MESSAGE */
-
-                message.textContent =
-                    "Registration successful!";
-
-                message.style.color =
-                    "green";
-
-
-                /* CLEAR FORM */
-
-                form.reset();
-
-
-                /* RETURN PASSWORD FIELDS TO HIDDEN */
-
-                passwordInput.type =
-                    "password";
-
-                confirmPasswordInput.type =
-                    "password";
-
-
-                /* GO TO LOGIN */
-
-                setTimeout(
-                    function() {
-
-                        window.location.href =
-                            "login.html";
-
-                    },
-                    1000
-                );
 
             }
         );
-
 
     </script>
 
