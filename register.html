@@ -63,7 +63,8 @@
 
         input[type="text"],
         input[type="email"],
-        input[type="password"] {
+        input[type="password"],
+        input[type="input"] {
             width: 100%;
             padding: 12px;
             margin-top: 7px;
@@ -131,21 +132,13 @@
 
     <nav>
 
-        <a href="index.html">
-            Home
-        </a>
+        <a href="index.html">Home</a>
 
-        <a href="products.html">
-            Products
-        </a>
+        <a href="products.html">Products</a>
 
-        <a href="login.html">
-            Login
-        </a>
+        <a href="login.html">Login</a>
 
-        <a href="register.html">
-            Register
-        </a>
+        <a href="register.html">Register</a>
 
     </nav>
 
@@ -162,7 +155,7 @@
             <form id="registerForm">
 
 
-                <!-- NAME -->
+                <!-- FULL NAME -->
 
                 <label for="name">
                     Full Name
@@ -250,12 +243,11 @@
                 </label>
 
 
-                <!-- REGISTER -->
+                <!-- REGISTER BUTTON -->
 
                 <button type="submit">
                     Register
                 </button>
-
 
             </form>
 
@@ -273,7 +265,6 @@
 
             </div>
 
-
         </div>
 
     </div>
@@ -287,39 +278,22 @@
         ========================= */
 
         const form =
-            document.getElementById(
-                "registerForm"
-            );
-
+            document.getElementById("registerForm");
 
         const message =
-            document.getElementById(
-                "message"
-            );
-
+            document.getElementById("message");
 
         const passwordInput =
-            document.getElementById(
-                "password"
-            );
-
+            document.getElementById("password");
 
         const confirmPasswordInput =
-            document.getElementById(
-                "confirmPassword"
-            );
-
+            document.getElementById("confirmPassword");
 
         const showPassword =
-            document.getElementById(
-                "showPassword"
-            );
-
+            document.getElementById("showPassword");
 
         const showConfirmPassword =
-            document.getElementById(
-                "showConfirmPassword"
-            );
+            document.getElementById("showConfirmPassword");
 
 
         /* =========================
@@ -327,20 +301,16 @@
         ========================= */
 
         showPassword.addEventListener(
-            "change",
+            "click",
             function() {
 
-                if (
-                    this.checked
-                ) {
+                if (showPassword.checked) {
 
-                    passwordInput.type =
-                        "text";
+                    passwordInput.type = "text";
 
                 } else {
 
-                    passwordInput.type =
-                        "password";
+                    passwordInput.type = "password";
 
                 }
 
@@ -353,20 +323,16 @@
         ========================= */
 
         showConfirmPassword.addEventListener(
-            "change",
+            "click",
             function() {
 
-                if (
-                    this.checked
-                ) {
+                if (showConfirmPassword.checked) {
 
-                    confirmPasswordInput.type =
-                        "text";
+                    confirmPasswordInput.type = "text";
 
                 } else {
 
-                    confirmPasswordInput.type =
-                        "password";
+                    confirmPasswordInput.type = "password";
 
                 }
 
@@ -375,7 +341,7 @@
 
 
         /* =========================
-           REGISTER
+           REGISTER ACCOUNT
         ========================= */
 
         form.addEventListener(
@@ -386,17 +352,13 @@
 
 
                 const name =
-                    document.getElementById(
-                        "name"
-                    )
+                    document.getElementById("name")
                     .value
                     .trim();
 
 
                 const email =
-                    document.getElementById(
-                        "email"
-                    )
+                    document.getElementById("email")
                     .value
                     .trim()
                     .toLowerCase();
@@ -410,11 +372,10 @@
                     confirmPasswordInput.value;
 
 
-                /* CHECK PASSWORD */
+                /* CHECK PASSWORDS */
 
                 if (
-                    password !==
-                    confirmPassword
+                    password !== confirmPassword
                 ) {
 
                     message.textContent =
@@ -428,7 +389,7 @@
                 }
 
 
-                /* GET USERS */
+                /* GET EXISTING USERS */
 
                 let users = [];
 
@@ -436,25 +397,19 @@
                 try {
 
                     const savedUsers =
-                        localStorage.getItem(
-                            "users"
-                        );
+                        localStorage.getItem("users");
 
 
                     if (savedUsers) {
 
                         users =
-                            JSON.parse(
-                                savedUsers
-                            );
+                            JSON.parse(savedUsers);
 
                     }
 
 
                     if (
-                        !Array.isArray(
-                            users
-                        )
+                        !Array.isArray(users)
                     ) {
 
                         users = [];
@@ -476,8 +431,7 @@
 
                             return (
                                 String(
-                                    user.email ||
-                                    ""
+                                    user.email || ""
                                 )
                                 .toLowerCase() ===
                                 email
@@ -504,35 +458,27 @@
 
                 const newUser = {
 
-                    id:
-                        Date.now(),
+                    id: Date.now(),
 
-                    name:
-                        name,
+                    name: name,
 
-                    email:
-                        email,
+                    email: email,
 
-                    password:
-                        password
+                    password: password
 
                 };
 
 
-                users.push(
-                    newUser
-                );
+                users.push(newUser);
 
 
-                /* SAVE USER */
+                /* SAVE USERS */
 
                 try {
 
                     localStorage.setItem(
                         "users",
-                        JSON.stringify(
-                            users
-                        )
+                        JSON.stringify(users)
                     );
 
                 } catch (error) {
@@ -548,7 +494,7 @@
                 }
 
 
-                /* SUCCESS */
+                /* SUCCESS MESSAGE */
 
                 message.textContent =
                     "Registration successful!";
@@ -557,10 +503,12 @@
                     "green";
 
 
+                /* CLEAR FORM */
+
                 form.reset();
 
 
-                /* RESET PASSWORD FIELDS */
+                /* RETURN PASSWORD FIELDS TO HIDDEN */
 
                 passwordInput.type =
                     "password";
@@ -580,7 +528,6 @@
                     },
                     1000
                 );
-
 
             }
         );
