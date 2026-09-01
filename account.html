@@ -229,6 +229,13 @@ h1 {
 
 </style>
 
+
+<!-- =========================
+     SUPABASE LIBRARY
+========================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 
@@ -342,68 +349,63 @@ Yes, Logout
 
 
 /* =========================
-   USER INFORMATION
+   SUPABASE CONNECTION
 ========================= */
 
-const loggedIn =
-localStorage.getItem(
-    "loggedIn"
-);
+const SUPABASE_URL =
+    "https://zofngbuatccapcypmvkf.supabase.co";
 
-const userName =
-localStorage.getItem(
-    "userName"
-);
 
-const userEmail =
-localStorage.getItem(
-    "userEmail"
-);
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
 
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+/* =========================
+   ELEMENTS
+========================= */
 
 const accountContent =
-document.getElementById(
-    "accountContent"
-);
+    document.getElementById(
+        "accountContent"
+    );
 
 
 const message =
-document.getElementById(
-    "message"
-);
+    document.getElementById(
+        "message"
+    );
 
-
-/* =========================
-   LOGOUT POPUP
-========================= */
 
 const logoutModal =
-document.getElementById(
-    "logoutModal"
-);
+    document.getElementById(
+        "logoutModal"
+    );
 
 
 const cancelLogout =
-document.getElementById(
-    "cancelLogout"
-);
+    document.getElementById(
+        "cancelLogout"
+    );
 
 
 const confirmLogout =
-document.getElementById(
-    "confirmLogout"
-);
+    document.getElementById(
+        "confirmLogout"
+    );
 
 
 /* =========================
-   CHECK LOGIN
+   SHOW LOGGED OUT
 ========================= */
 
-if (
-    loggedIn !== "true" ||
-    !userEmail
-) {
-
+function showLoggedOut() {
 
     accountContent.innerHTML = `
 
@@ -425,140 +427,252 @@ if (
 
     `;
 
-} else {
+}
 
 
-    /* =========================
-       SHOW ACCOUNT
-    ========================= */
+/* =========================
+   LOAD ACCOUNT
+========================= */
 
-    accountContent.innerHTML = `
+async function loadAccount() {
 
-        <div class="info">
+    try {
 
-            <p>
-
-                <strong>
-                    Name:
-                </strong>
-
-                ${userName || "Not provided"}
-
-            </p>
+        const {
+            data,
+            error
+        } =
+        await supabaseClient.auth.getUser();
 
 
-            <p>
+        if (
+            error ||
+            !data ||
+            !data.user
+        ) {
 
-                <strong>
-                    Email:
-                </strong>
+            showLoggedOut();
 
-                ${userEmail}
+            return;
 
-            </p>
-
-        </div>
-
-
-        <a
-            href="my-products.html"
-            class="button products-button"
-        >
-            📦 My Products
-        </a>
+        }
 
 
-        <a
-            href="post-products.html"
-            class="button post-button"
-        >
-            ➕ Post Product
-        </a>
+        const user =
+            data.user;
 
 
-        <button
-            type="button"
-            id="logoutButton"
-            class="button logout-button"
-        >
-            🚪 Logout
-        </button>
-
-    `;
+        const userName =
+            user.user_metadata &&
+            user.user_metadata.name
+            ? user.user_metadata.name
+            : "Not provided";
 
 
-    /* =========================
-       GET LOGOUT BUTTON
-    ========================= */
+        const userEmail =
+            user.email ||
+            "No email";
 
-    const logoutButton =
-        document.getElementById(
-            "logoutButton"
+
+        /* =========================
+           SHOW ACCOUNT INFORMATION
+        ========================= */
+
+        accountContent.innerHTML = `
+
+            <div class="info">
+
+                <p>
+
+                    <strong>
+                        Name:
+                    </strong>
+
+                    ${escapeHTML(userName)}
+
+                </p>
+
+
+                <p>
+
+                    <strong>
+                        Email:
+                    </strong>
+
+                    ${escapeHTML(userEmail)}
+
+                </p>
+
+            </div>
+
+
+            <a
+                href="my-products.html"
+                class="button products-button"
+            >
+                📦 My Products
+            </a>
+
+
+            <a
+                href="post-products.html"
+                class="button post-button"
+            >
+                ➕ Post Product
+            </a>
+
+
+            <button
+                type="button"
+                id="logoutButton"
+                class="button logout-button"
+            >
+                🚪 Logout
+            </button>
+
+        `;
+
+
+        /* =========================
+           GET LOGOUT BUTTON
+        ========================= */
+
+        const logoutButton =
+            document.getElementById(
+                "logoutButton"
+            );
+
+
+        /* =========================
+           OPEN LOGOUT POPUP
+        ========================= */
+
+        logoutButton.addEventListener(
+            "click",
+            function() {
+
+                logoutModal.style.display =
+                    "flex";
+
+            }
         );
 
 
-    /* =========================
-       OPEN POPUP
-    ========================= */
+    } catch (error) {
 
-    logoutButton.addEventListener(
-        "click",
-        function() {
+        showLoggedOut();
 
-            logoutModal.style.display =
-                "flex";
+    }
 
-        }
-    );
+}
 
 
-    /* =========================
-       CANCEL LOGOUT
-    ========================= */
+/* =========================
+   ESCAPE HTML
+========================= */
 
-    cancelLogout.addEventListener(
-        "click",
-        function() {
+function escapeHTML(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        text;
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================
+   CANCEL LOGOUT
+========================= */
+
+cancelLogout.addEventListener(
+    "click",
+    function() {
+
+        logoutModal.style.display =
+            "none";
+
+    }
+);
+
+
+/* =========================
+   CLICK OUTSIDE POPUP
+========================= */
+
+logoutModal.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+            event.target ===
+            logoutModal
+        ) {
 
             logoutModal.style.display =
                 "none";
 
         }
-    );
+
+    }
+);
 
 
-    /* =========================
-       CLICK OUTSIDE POPUP
-    ========================= */
+/* =========================
+   CONFIRM LOGOUT
+========================= */
 
-    logoutModal.addEventListener(
-        "click",
-        function(event) {
+confirmLogout.addEventListener(
+    "click",
+    async function() {
 
-            if (
-                event.target ===
-                logoutModal
-            ) {
 
-                logoutModal.style.display =
-                    "none";
+        confirmLogout.disabled =
+            true;
+
+
+        confirmLogout.textContent =
+            "Logging out...";
+
+
+        try {
+
+
+            const {
+                error
+            } =
+            await supabaseClient.auth.signOut();
+
+
+            if (error) {
+
+                message.textContent =
+                    "Logout failed: " +
+                    error.message;
+
+                message.style.color =
+                    "red";
+
+
+                confirmLogout.disabled =
+                    false;
+
+                confirmLogout.textContent =
+                    "Yes, Logout";
+
+                return;
 
             }
 
-        }
-    );
 
-
-    /* =========================
-       CONFIRM LOGOUT
-    ========================= */
-
-    confirmLogout.addEventListener(
-        "click",
-        function() {
-
-
-            /* REMOVE LOGIN SESSION */
+            /* =========================
+               REMOVE OLD LOCAL DATA
+            ========================= */
 
             localStorage.removeItem(
                 "loggedIn"
@@ -577,13 +691,17 @@ if (
             );
 
 
-            /* CLOSE POPUP */
+            /* =========================
+               CLOSE POPUP
+            ========================= */
 
             logoutModal.style.display =
                 "none";
 
 
-            /* SHOW MESSAGE */
+            /* =========================
+               SUCCESS MESSAGE
+            ========================= */
 
             message.textContent =
                 "You have been logged out successfully.";
@@ -592,7 +710,9 @@ if (
                 "#087f5b";
 
 
-            /* RETURN HOME */
+            /* =========================
+               RETURN HOME
+            ========================= */
 
             setTimeout(
                 function() {
@@ -604,10 +724,35 @@ if (
                 700
             );
 
-        }
-    );
 
-}
+        } catch (error) {
+
+
+            message.textContent =
+                "Unable to logout. Please try again.";
+
+            message.style.color =
+                "red";
+
+
+            confirmLogout.disabled =
+                false;
+
+            confirmLogout.textContent =
+                "Yes, Logout";
+
+        }
+
+    }
+);
+
+
+/* =========================
+   START ACCOUNT PAGE
+========================= */
+
+loadAccount();
+
 
 </script>
 
