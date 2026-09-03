@@ -12,6 +12,12 @@
 
     <title>Post Product - MarketPlace</title>
 
+
+    <!-- SUPABASE -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
     <style>
 
         * {
@@ -299,6 +305,7 @@
                 <button
                     type="submit"
                     class="post-button"
+                    id="postButton"
                 >
                     Post Product
                 </button>
@@ -325,19 +332,27 @@
     <script>
 
 
-        /* =========================
-           USER INFORMATION
-        ========================= */
+        /* =================================
+           SUPABASE CONNECTION
+        ================================= */
 
-        const loggedIn =
-            localStorage.getItem("loggedIn");
+        const SUPABASE_URL =
+            "https://zofngbuatccapcypmvkf.supabase.co";
 
-        const userName =
-            localStorage.getItem("userName");
+        const SUPABASE_KEY =
+            "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
 
-        const userEmail =
-            localStorage.getItem("userEmail");
 
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_KEY
+            );
+
+
+        /* =================================
+           HTML ELEMENTS
+        ================================= */
 
         const postBox =
             document.getElementById("postBox");
@@ -360,31 +375,75 @@
         const sellerNameInput =
             document.getElementById("sellerName");
 
+        const postButton =
+            document.getElementById("postButton");
 
-        /* =========================
-           CHECK LOGIN
-        ========================= */
 
-        if (
-            loggedIn !== "true" ||
-            !userEmail
-        ) {
+        let currentUser = null;
 
-            postBox.style.display = "none";
 
-            loginRequired.style.display = "block";
+        /* =================================
+           CHECK SUPABASE LOGIN
+        ================================= */
 
-        } else {
+        async function checkUser() {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.auth.getUser();
+
+
+            if (
+                error ||
+                !data.user
+            ) {
+
+                currentUser = null;
+
+                postBox.style.display =
+                    "none";
+
+                loginRequired.style.display =
+                    "block";
+
+                return;
+
+            }
+
+
+            currentUser =
+                data.user;
+
+
+            postBox.style.display =
+                "block";
+
+            loginRequired.style.display =
+                "none";
+
+
+            /* GET USER NAME */
+
+            const metadata =
+                currentUser.user_metadata || {};
+
 
             sellerNameInput.value =
-                userName || "";
+                metadata.name ||
+                metadata.full_name ||
+                localStorage.getItem("userName") ||
+                "";
 
         }
 
 
-        /* =========================
+        checkUser();
+
+
+        /* =================================
            IMAGE PREVIEW
-        ========================= */
+        ================================= */
 
         imageInput.addEventListener(
             "change",
@@ -392,6 +451,7 @@
 
                 const file =
                     imageInput.files[0];
+
 
                 if (!file) {
 
@@ -403,7 +463,7 @@
                 }
 
 
-                /* LIMIT IMAGE SIZE */
+                /* IMAGE SIZE LIMIT */
 
                 if (
                     file.size >
@@ -416,7 +476,8 @@
                     message.style.color =
                         "red";
 
-                    imageInput.value = "";
+                    imageInput.value =
+                        "";
 
                     preview.style.display =
                         "none";
@@ -448,21 +509,24 @@
         );
 
 
-        /* =========================
+        /* =================================
            POST PRODUCT
-        ========================= */
+        ================================= */
 
         form.addEventListener(
             "submit",
-            function(event) {
+            async function(event) {
 
                 event.preventDefault();
 
 
-                if (
-                    loggedIn !== "true" ||
-                    !userEmail
-                ) {
+                message.textContent =
+                    "";
+
+
+                /* CHECK LOGIN */
+
+                if (!currentUser) {
 
                     message.textContent =
                         "Please login first.";
@@ -474,6 +538,8 @@
 
                 }
 
+
+                /* GET FORM VALUES */
 
                 const name =
                     document
@@ -519,6 +585,8 @@
                     imageInput.files[0];
 
 
+                /* CHECK IMAGE */
+
                 if (!imageFile) {
 
                     message.textContent =
@@ -532,184 +600,236 @@
                 }
 
 
-                /* READ IMAGE */
+                if (
+                    imageFile.size >
+                    700 * 1024
+                ) {
 
-                const reader =
-                    new FileReader();
+                    message.textContent =
+                        "Please choose an image smaller than 700 KB.";
 
+                    message.style.color =
+                        "red";
 
-                reader.onload =
-                    function(event) {
+                    return;
 
-
-                        /* =========================
-                           CREATE PRODUCT
-                        ========================= */
-
-                        const product = {
-
-                            id:
-                                Date.now().toString(),
-
-                            name:
-                                name,
-
-                            price:
-                                price,
-
-                            category:
-                                category,
-
-                            description:
-                                description,
-
-                            image:
-                                event.target.result,
-
-                            sellerName:
-                                sellerName,
-
-                            phone:
-                                phone,
-
-                            sellerEmail:
-                                userEmail,
-
-                            createdAt:
-                                new Date().toISOString()
-
-                        };
+                }
 
 
-                        /* =========================
-                           GET OLD PRODUCTS
-                        ========================= */
+                /* DISABLE BUTTON */
 
-                        let products = [];
+                postButton.disabled =
+                    true;
 
-
-                        try {
-
-                            const saved =
-                                localStorage.getItem(
-                                    "products"
-                                );
+                postButton.textContent =
+                    "Posting...";
 
 
-                            if (saved) {
-
-                                products =
-                                    JSON.parse(saved);
-
-                            }
+                try {
 
 
-                            if (
-                                !Array.isArray(
-                                    products
-                                )
-                            ) {
+                    /* =================================
+                       CREATE UNIQUE IMAGE NAME
+                    ================================= */
 
-                                products = [];
-
-                            }
-
-                        } catch (error) {
-
-                            products = [];
-
-                        }
+                    const fileExtension =
+                        imageFile.name
+                            .split(".")
+                            .pop()
+                            .toLowerCase();
 
 
-                        /* =========================
-                           ADD PRODUCT
-                        ========================= */
+                    const fileName =
+                        currentUser.id +
+                        "_" +
+                        Date.now() +
+                        "." +
+                        fileExtension;
 
-                        products.push(product);
+
+                    const filePath =
+                        fileName;
 
 
-                        /* =========================
-                           SAVE PRODUCT
-                        ========================= */
+                    /* =================================
+                       UPLOAD IMAGE
+                    ================================= */
 
-                        try {
+                    const {
+                        error: uploadError
+                    } =
+                        await supabaseClient
+                            .storage
+                            .from("product-images")
+                            .upload(
+                                filePath,
+                                imageFile,
+                                {
+                                    cacheControl:
+                                        "3600",
 
-                            localStorage.setItem(
-                                "products",
-                                JSON.stringify(products)
+                                    upsert:
+                                        false,
+
+                                    contentType:
+                                        imageFile.type
+                                }
                             );
 
 
-                            /*
-                             * SAVE LAST POSTED PRODUCT
-                             */
+                    if (uploadError) {
 
-                            localStorage.setItem(
-                                "lastPostedProductId",
-                                product.id
+                        throw new Error(
+                            "Image upload failed: " +
+                            uploadError.message
+                        );
+
+                    }
+
+
+                    /* =================================
+                       GET PUBLIC IMAGE URL
+                    ================================= */
+
+                    const {
+                        data: imageData
+                    } =
+                        supabaseClient
+                            .storage
+                            .from("product-images")
+                            .getPublicUrl(
+                                filePath
                             );
 
 
-                            message.textContent =
-                                "Product posted successfully!";
-
-                            message.style.color =
-                                "green";
+                    const imageUrl =
+                        imageData.publicUrl;
 
 
-                            /*
-                             * GO TO MY PRODUCTS
-                             */
+                    /* =================================
+                       CREATE PRODUCT ID
+                    ================================= */
 
-                            setTimeout(
-                                function() {
+                    const productId =
+                        crypto.randomUUID();
 
-                                    window.location.replace(
-                                        "my-products.html"
-                                    );
 
-                                },
-                                800
+                    /* =================================
+                       SAVE PRODUCT TO SUPABASE
+                    ================================= */
+
+                    const {
+                        error: insertError
+                    } =
+                        await supabaseClient
+                            .from("products")
+                            .insert({
+
+                                id:
+                                    productId,
+
+                                name:
+                                    name,
+
+                                price:
+                                    price,
+
+                                category:
+                                    category,
+
+                                description:
+                                    description,
+
+                                image_url:
+                                    imageUrl,
+
+                                seller_name:
+                                    sellerName,
+
+                                phone:
+                                    phone,
+
+                                seller_email:
+                                    currentUser.email,
+
+                                created_at:
+                                    new Date()
+                                        .toISOString()
+
+                            });
+
+
+                    if (insertError) {
+
+                        throw new Error(
+                            "Product save failed: " +
+                            insertError.message
+                        );
+
+                    }
+
+
+                    /* =================================
+                       SUCCESS
+                    ================================= */
+
+                    message.textContent =
+                        "Product posted successfully!";
+
+                    message.style.color =
+                        "green";
+
+
+                    /* SAVE LAST PRODUCT ID */
+
+                    localStorage.setItem(
+                        "lastPostedProductId",
+                        productId
+                    );
+
+
+                    /* GO TO MY PRODUCTS */
+
+                    setTimeout(
+                        function() {
+
+                            window.location.replace(
+                                "my-products.html"
                             );
 
-
-                        } catch (error) {
-
-                            message.textContent =
-                                "Could not save product. " +
-                                "Your browser storage may be full.";
-
-                            message.style.color =
-                                "red";
-
-                        }
-
-                    };
+                        },
+                        800
+                    );
 
 
-                reader.onerror =
-                    function() {
+                } catch (error) {
 
-                        message.textContent =
-                            "Could not read the image.";
-
-                        message.style.color =
-                            "red";
-
-                    };
+                    console.error(error);
 
 
-                reader.readAsDataURL(
-                    imageFile
-                );
+                    message.textContent =
+                        error.message ||
+                        "Could not post product.";
+
+                    message.style.color =
+                        "red";
+
+
+                    postButton.disabled =
+                        false;
+
+                    postButton.textContent =
+                        "Post Product";
+
+                }
 
             }
         );
 
 
-        /* =========================
+        /* =================================
            CANCEL
-        ========================= */
+        ================================= */
 
         document
             .getElementById("backButton")
