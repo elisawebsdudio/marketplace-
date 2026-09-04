@@ -12,6 +12,8 @@
 
     <title>Edit Product - MarketPlace</title>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
 
         * {
@@ -125,6 +127,7 @@
 
 
 <body>
+
 
     <nav>
 
@@ -267,6 +270,7 @@
             <button
                 type="submit"
                 class="save-button"
+                id="saveButton"
             >
                 Save Changes
             </button>
@@ -285,511 +289,276 @@
     </div>
 
 
-    <script>
-
-        const form =
-            document.getElementById("editForm");
-
-        const message =
-            document.getElementById("message");
-
-        const currentImage =
-            document.getElementById("currentImage");
-
-        const imageInput =
-            document.getElementById("image");
+<script>
 
 
-        /*
-         * GET PRODUCT ID
-         */
+/* =================================
+   SUPABASE CONNECTION
+================================= */
 
-        const params =
-            new URLSearchParams(
-                window.location.search
-            );
+const SUPABASE_URL =
+    "https://zofngbuatccapcypmvkf.supabase.co";
 
-        const id =
-            params.get("id");
+const SUPABASE_KEY =
+    "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
-        /*
-         * CHECK LOGIN
-         */
+/* =================================
+   PAGE ELEMENTS
+================================= */
 
-        const loggedIn =
-            localStorage.getItem("loggedIn");
+const form =
+    document.getElementById("editForm");
 
-        const userEmail =
-            localStorage.getItem("userEmail");
+const message =
+    document.getElementById("message");
+
+const currentImage =
+    document.getElementById("currentImage");
+
+const imageInput =
+    document.getElementById("image");
+
+const saveButton =
+    document.getElementById("saveButton");
+
+
+/* =================================
+   GET PRODUCT ID
+================================= */
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const productId =
+    params.get("id");
+
+
+/* =================================
+   CURRENT PRODUCT
+================================= */
+
+let currentProduct = null;
+
+
+/* =================================
+   LOAD PRODUCT
+================================= */
+
+async function loadProduct() {
+
+    if (!productId) {
+
+        showError(
+            "Product Not Found",
+            "No product ID was provided."
+        );
+
+        return;
+    }
+
+
+    /* ==============================
+       CHECK USER
+    ============================== */
+
+    const {
+        data: {
+            user
+        },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (
+        userError ||
+        !user
+    ) {
+
+        form.style.display = "none";
+
+        showError(
+            "Login Required",
+            "Please login before editing a product."
+        );
+
+        return;
+    }
+
+
+    /* ==============================
+       GET PRODUCT
+    ============================== */
+
+    const {
+        data: product,
+        error
+    } = await supabaseClient
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
+
+
+    if (error || !product) {
+
+        form.style.display = "none";
+
+        showError(
+            "Product Not Found",
+            "The product you are trying to edit does not exist."
+        );
+
+        console.error(error);
+
+        return;
+    }
+
+
+    /* ==============================
+       CHECK SELLER
+    ============================== */
+
+    if (
+        String(product.seller_email || "")
+            .trim()
+            .toLowerCase() !==
+        String(user.email || "")
+            .trim()
+            .toLowerCase()
+    ) {
+
+        form.style.display = "none";
+
+        showError(
+            "Access Denied",
+            "You can only edit your own products."
+        );
+
+        return;
+    }
+
+
+    /* ==============================
+       SAVE CURRENT PRODUCT
+    ============================== */
+
+    currentProduct =
+        product;
+
+
+    /* ==============================
+       FILL FORM
+    ============================== */
+
+    document
+        .getElementById("productName")
+        .value =
+            product.name || "";
+
+
+    document
+        .getElementById("price")
+        .value =
+            product.price || "";
+
+
+    document
+        .getElementById("category")
+        .value =
+            product.category || "";
+
+
+    document
+        .getElementById("description")
+        .value =
+            product.description || "";
+
+
+    document
+        .getElementById("sellerName")
+        .value =
+            product.seller_name || "";
+
+
+    document
+        .getElementById("phone")
+        .value =
+            product.phone || "";
+
+
+    if (product.image_url) {
+
+        currentImage.src =
+            product.image_url;
+
+    } else {
+
+        currentImage.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =================================
+   SHOW ERROR
+================================= */
+
+function showError(
+    title,
+    text
+) {
+
+    message.innerHTML = `
+
+        <div class="error-box">
+
+            <h2>
+                ${title}
+            </h2>
+
+            <p>
+                ${text}
+            </p>
+
+            <a href="my-products.html">
+                Back to My Products
+            </a>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =================================
+   IMAGE PREVIEW
+================================= */
+
+imageInput.addEventListener(
+    "change",
+    function() {
+
+        const file =
+            imageInput.files[0];
+
+        if (!file) {
+            return;
+        }
 
 
         if (
-            loggedIn !== "true" ||
-            !userEmail
-        ) {
-
-            form.style.display = "none";
-
-            message.innerHTML = `
-
-                <div class="error-box">
-
-                    <h2>
-                        Login Required
-                    </h2>
-
-                    <p>
-                        Please login before
-                        editing a product.
-                    </p>
-
-                    <a href="login.html">
-                        Login
-                    </a>
-
-                </div>
-
-            `;
-
-        } else {
-
-
-            /*
-             * GET PRODUCTS
-             */
-
-            let products = [];
-
-            try {
-
-                const saved =
-                    localStorage.getItem(
-                        "products"
-                    );
-
-                if (saved) {
-
-                    products =
-                        JSON.parse(saved);
-
-                }
-
-            } catch (error) {
-
-                products = [];
-
-            }
-
-
-            /*
-             * CHECK PRODUCTS
-             */
-
-            if (!Array.isArray(products)) {
-
-                products = [];
-
-            }
-
-
-            const index =
-                Number(id);
-
-
-            /*
-             * CHECK ID
-             */
-
-            if (
-                id === null ||
-                !Number.isInteger(index) ||
-                index < 0 ||
-                index >= products.length
-            ) {
-
-                form.style.display = "none";
-
-                message.innerHTML = `
-
-                    <div class="error-box">
-
-                        <h2>
-                            Product Not Found
-                        </h2>
-
-                        <p>
-                            The product you are
-                            trying to edit does not exist.
-                        </p>
-
-                        <a href="my-products.html">
-                            Back to My Products
-                        </a>
-
-                    </div>
-
-                `;
-
-            } else {
-
-                const product =
-                    products[index];
-
-
-                /*
-                 * CHECK SELLER
-                 */
-
-                if (
-                    product.sellerEmail &&
-                    String(product.sellerEmail)
-                        .toLowerCase() !==
-                    String(userEmail)
-                        .toLowerCase()
-                ) {
-
-                    form.style.display = "none";
-
-                    message.innerHTML = `
-
-                        <div class="error-box">
-
-                            <h2>
-                                Access Denied
-                            </h2>
-
-                            <p>
-                                You can only edit
-                                your own products.
-                            </p>
-
-                            <a href="my-products.html">
-                                Back to My Products
-                            </a>
-
-                        </div>
-
-                    `;
-
-                } else {
-
-
-                    /*
-                     * FILL FORM
-                     */
-
-                    document
-                        .getElementById("productName")
-                        .value =
-                            product.name || "";
-
-
-                    document
-                        .getElementById("price")
-                        .value =
-                            product.price || "";
-
-
-                    document
-                        .getElementById("category")
-                        .value =
-                            product.category || "";
-
-
-                    document
-                        .getElementById("description")
-                        .value =
-                            product.description || "";
-
-
-                    document
-                        .getElementById("sellerName")
-                        .value =
-                            product.sellerName || "";
-
-
-                    document
-                        .getElementById("phone")
-                        .value =
-                            product.phone || "";
-
-
-                    if (product.image) {
-
-                        currentImage.src =
-                            product.image;
-
-                    }
-
-
-                    /*
-                     * NEW IMAGE PREVIEW
-                     */
-
-                    imageInput.addEventListener(
-                        "change",
-                        function() {
-
-                            const file =
-                                imageInput.files[0];
-
-                            if (!file) {
-                                return;
-                            }
-
-                            if (
-                                file.size >
-                                1024 * 1024
-                            ) {
-
-                                message.textContent =
-                                    "Image must be smaller than 1 MB.";
-
-                                message.style.color =
-                                    "red";
-
-                                imageInput.value =
-                                    "";
-
-                                return;
-
-                            }
-
-
-                            const reader =
-                                new FileReader();
-
-
-                            reader.onload =
-                                function(event) {
-
-                                    currentImage.src =
-                                        event.target.result;
-
-                                };
-
-
-                            reader.readAsDataURL(
-                                file
-                            );
-
-                        }
-                    );
-
-
-                    /*
-                     * SAVE CHANGES
-                     */
-
-                    form.addEventListener(
-                        "submit",
-                        function(event) {
-
-                            event.preventDefault();
-
-
-                            product.name =
-                                document
-                                .getElementById(
-                                    "productName"
-                                )
-                                .value
-                                .trim();
-
-
-                            product.price =
-                                document
-                                .getElementById(
-                                    "price"
-                                )
-                                .value
-                                .trim();
-
-
-                            product.category =
-                                document
-                                .getElementById(
-                                    "category"
-                                )
-                                .value;
-
-
-                            product.description =
-                                document
-                                .getElementById(
-                                    "description"
-                                )
-                                .value
-                                .trim();
-
-
-                            product.sellerName =
-                                document
-                                .getElementById(
-                                    "sellerName"
-                                )
-                                .value
-                                .trim();
-
-
-                            product.phone =
-                                document
-                                .getElementById(
-                                    "phone"
-                                )
-                                .value
-                                .trim();
-
-
-                            /*
-                             * KEEP SELLER EMAIL
-                             */
-
-                            product.sellerEmail =
-                                userEmail;
-
-
-                            const file =
-                                imageInput.files[0];
-
-
-                            /*
-                             * SAVE WITH NEW IMAGE
-                             */
-
-                            if (file) {
-
-                                if (
-                                    file.size >
-                                    1024 * 1024
-                                ) {
-
-                                    message.textContent =
-                                        "Image must be smaller than 1 MB.";
-
-                                    message.style.color =
-                                        "red";
-
-                                    return;
-
-                                }
-
-
-                                const reader =
-                                    new FileReader();
-
-
-                                reader.onload =
-                                    function(event) {
-
-                                        product.image =
-                                            event.target.result;
-
-                                        saveProduct();
-
-                                    };
-
-
-                                reader.onerror =
-                                    function() {
-
-                                        message.textContent =
-                                            "Could not read the image.";
-
-                                        message.style.color =
-                                            "red";
-
-                                    };
-
-
-                                reader.readAsDataURL(
-                                    file
-                                );
-
-                            } else {
-
-                                saveProduct();
-
-                            }
-
-                        }
-                    );
-
-
-                    /*
-                     * SAVE PRODUCT FUNCTION
-                     */
-
-                    function saveProduct() {
-
-                        try {
-
-                            localStorage.setItem(
-                                "products",
-                                JSON.stringify(
-                                    products
-                                )
-                            );
-
-
-                            message.textContent =
-                                "Product updated successfully!";
-
-                            message.style.color =
-                                "green";
-
-
-                            setTimeout(
-                                function() {
-
-                                    window.location.href =
-                                        "my-products.html";
-
-                                },
-                                1000
-                            );
-
-                        } catch (error) {
-
-                            message.textContent =
-                                "SAVE ERROR: " +
-                                error.message;
-
-                            message.style.color =
-                                "red";
-
-                        }
-
-                    }
-
-
-                    /*
-                     * CANCEL
-                     */
-
-                    document
-                        .getElementById(
-                            "backButton"
-                        )
-                        .addEventListener(
-                            "click",
-                            function() {
-
-                                window.location.href =
-                                    "my-products.html";
-
-                            }
-                        );
-
-                }
-
-            }
-
-        }
-
-    </script>
-
-</body>
-
-</html>
+            file.size >
+            700 * 1024
+        )
