@@ -9,6 +9,8 @@
 
 <title>My Products - MarketPlace</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 * {
@@ -20,7 +22,8 @@ body {
     font-family: Arial, sans-serif;
     background: #f4f7f6;
 }
-  nav {
+
+nav {
     background: #087f5b;
     padding: 12px 5px;
     text-align: center;
@@ -244,7 +247,7 @@ h1 {
 </head>
 
 
-<>
+<body>
 
 
 <nav>
@@ -327,19 +330,21 @@ class="welcome"
 
 <script>
 
-
 /* =================================
-   USER DATA
+   SUPABASE CONNECTION
 ================================= */
 
-const loggedIn =
-localStorage.getItem("loggedIn");
+const SUPABASE_URL =
+    "https://zofngbuatccapcypmvkf.supabase.co";
 
-const userEmail =
-localStorage.getItem("userEmail");
+const SUPABASE_KEY =
+    "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
 
-const userName =
-localStorage.getItem("userName");
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
 /* =================================
@@ -347,170 +352,181 @@ localStorage.getItem("userName");
 ================================= */
 
 const productsContainer =
-document.getElementById(
-    "productsContainer"
-);
+    document.getElementById(
+        "productsContainer"
+    );
 
 const welcome =
-document.getElementById(
-    "welcome"
-);
+    document.getElementById(
+        "welcome"
+    );
 
 const message =
-document.getElementById(
-    "message"
-);
+    document.getElementById(
+        "message"
+    );
 
 const deleteModal =
-document.getElementById(
-    "deleteModal"
-);
+    document.getElementById(
+        "deleteModal"
+    );
 
 const cancelDelete =
-document.getElementById(
-    "cancelDelete"
-);
+    document.getElementById(
+        "cancelDelete"
+    );
 
 const confirmDelete =
-document.getElementById(
-    "confirmDelete"
-);
+    document.getElementById(
+        "confirmDelete"
+    );
 
 
 /* =================================
    SELECTED PRODUCT
 ================================= */
 
-let selectedProductIndex = null;
+let selectedProductId = null;
 
 
 /* =================================
-   CHECK LOGIN
+   ESCAPE HTML
 ================================= */
 
-if (
-    loggedIn !== "true" ||
-    !userEmail
-) {
+function escapeHTML(value) {
 
-    productsContainer.innerHTML = `
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
-        <div class="empty">
+}
 
-            <h2>
-                Login Required
-            </h2>
 
-            <p>
-                Please login before
-                viewing your products.
-            </p>
+/* =================================
+   LOAD MY PRODUCTS
+================================= */
 
-            <a href="login.html">
-                Login
-            </a>
+async function loadMyProducts() {
 
-        </div>
+    productsContainer.innerHTML = "";
 
-    `;
+    message.textContent = "";
 
-} else {
+
+    /* ==============================
+       CHECK SUPABASE LOGIN
+    ============================== */
+
+    const {
+        data: {
+            user
+        },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (
+        userError ||
+        !user
+    ) {
+
+        productsContainer.innerHTML = `
+
+            <div class="empty">
+
+                <h2>
+                    Login Required
+                </h2>
+
+                <p>
+                    Please login before
+                    viewing your products.
+                </p>
+
+                <a href="login.html">
+                    Login
+                </a>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* ==============================
+       USER INFORMATION
+    ============================== */
+
+    const userEmail =
+        user.email || "";
+
+    const userName =
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        "Seller";
 
 
     welcome.textContent =
         "Welcome, " +
-        (userName || "Seller") +
+        userName +
         "! Here are your products.";
 
 
-    /* =================================
-       GET ALL PRODUCTS
-    ================================= */
+    /* ==============================
+       GET MY PRODUCTS
+    ============================== */
 
-    let products = [];
-
-
-    try {
-
-        const savedProducts =
-            localStorage.getItem(
-                "products"
-            );
-
-
-        if (savedProducts) {
-
-            products =
-                JSON.parse(
-                    savedProducts
-                );
-
-        }
-
-
-        if (
-            !Array.isArray(products)
-        ) {
-
-            products = [];
-
-        }
-
-    } catch (error) {
-
-        products = [];
-
-    }
-
-
-    /* =================================
-       FIND MY PRODUCTS
-    ================================= */
-
-    const currentEmail =
-        String(userEmail)
-        .trim()
-        .toLowerCase();
-
-
-    const myProducts =
-        products
-        .map(
-            function(product, index) {
-
-                return {
-                    product: product,
-                    index: index
-                };
-
-            }
-        )
-        .filter(
-            function(item) {
-
-                const sellerEmail =
-                    String(
-                        item.product.sellerEmail || ""
-                    )
-                    .trim()
-                    .toLowerCase();
-
-
-                return (
-                    sellerEmail ===
-                    currentEmail
-                );
-
+    const {
+        data: products,
+        error
+    } = await supabaseClient
+        .from("products")
+        .select("*")
+        .eq("seller_email", userEmail)
+        .order(
+            "created_at",
+            {
+                ascending: false
             }
         );
 
 
-    /* =================================
+    if (error) {
+
+        console.error(error);
+
+        productsContainer.innerHTML = `
+
+            <div class="empty">
+
+                <h2>
+                    Could Not Load Products
+                </h2>
+
+                <p>
+                    ${escapeHTML(error.message)}
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* ==============================
        NO PRODUCTS
-    ================================= */
+    ============================== */
 
     if (
-        myProducts.length === 0
+        !products ||
+        products.length === 0
     ) {
 
         productsContainer.innerHTML = `
@@ -534,150 +550,157 @@ if (
 
         `;
 
-    } else {
-
-
-        /* =================================
-           SHOW PRODUCTS
-        ================================= */
-
-        myProducts.forEach(
-            function(item) {
-
-                const product =
-                    item.product;
-
-                const index =
-                    item.index;
-
-
-                const card =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                card.className =
-                    "product-card";
-
-
-                card.innerHTML = `
-
-                    <img
-                        src="${product.image || ""}"
-                        alt="${product.name || "Product"}"
-                    >
-
-
-                    <div class="product-info">
-
-                        <h2>
-                            ${product.name || "Product"}
-                        </h2>
-
-
-                        <p class="price">
-                            ${product.price || "Price not provided"}
-                        </p>
-
-
-                        <p>
-
-                            <span class="category">
-                                ${product.category || "Other"}
-                            </span>
-
-                        </p>
-
-
-                        <p>
-                            ${product.description || "No description available."}
-                        </p>
-
-
-                        <p>
-
-                            <strong>
-                                Seller:
-                            </strong>
-
-                            ${product.sellerName || userName || "Seller"}
-
-                        </p>
-
-
-                        <p>
-
-                            <strong>
-                                Phone:
-                            </strong>
-
-                            ${product.phone || "Not provided"}
-
-                        </p>
-
-
-                        <a
-                            href="product-details.html?id=${index}"
-                            class="button details-button"
-                        >
-                            👁️ View Details
-                        </a>
-
-
-                        <a
-                            href="edit-product.html?id=${index}"
-                            class="button edit-button"
-                        >
-                            ✏️ Edit Product
-                        </a>
-
-
-                        <button
-                            type="button"
-                            class="button delete-button"
-                        >
-                            🗑️ Delete Product
-                        </button>
-
-                    </div>
-
-                `;
-
-
-                productsContainer.appendChild(
-                    card
-                );
-
-
-                /* =================================
-                   DELETE BUTTON
-                ================================= */
-
-                const deleteButton =
-                    card.querySelector(
-                        ".delete-button"
-                    );
-
-
-                deleteButton.addEventListener(
-                    "click",
-                    function() {
-
-                        selectedProductIndex =
-                            index;
-
-
-                        deleteModal.style.display =
-                            "flex";
-
-                    }
-                );
-
-            }
-        );
-
+        return;
     }
+
+
+    /* ==============================
+       DISPLAY PRODUCTS
+    ============================== */
+
+    products.forEach(
+        function(product) {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "product-card";
+
+
+            card.innerHTML = `
+
+                <img
+                    src="${escapeHTML(product.image_url || "")}"
+                    alt="${escapeHTML(product.name || "Product")}"
+                >
+
+
+                <div class="product-info">
+
+                    <h2>
+                        ${escapeHTML(product.name || "Product")}
+                    </h2>
+
+
+                    <p class="price">
+                        ${escapeHTML(
+                            product.price ||
+                            "Price not provided"
+                        )}
+                    </p>
+
+
+                    <p>
+
+                        <span class="category">
+                            ${escapeHTML(
+                                product.category ||
+                                "Other"
+                            )}
+                        </span>
+
+                    </p>
+
+
+                    <p>
+                        ${escapeHTML(
+                            product.description ||
+                            "No description available."
+                        )}
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Seller:
+                        </strong>
+
+                        ${escapeHTML(
+                            product.seller_name ||
+                            userName ||
+                            "Seller"
+                        )}
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Phone:
+                        </strong>
+
+                        ${escapeHTML(
+                            product.phone ||
+                            "Not provided"
+                        )}
+
+                    </p>
+
+
+                    <a
+                        href="product-details.html?id=${encodeURIComponent(product.id)}"
+                        class="button details-button"
+                    >
+                        👁️ View Details
+                    </a>
+
+
+                    <a
+                        href="edit-product.html?id=${encodeURIComponent(product.id)}"
+                        class="button edit-button"
+                    >
+                        ✏️ Edit Product
+                    </a>
+
+
+                    <button
+                        type="button"
+                        class="button delete-button"
+                    >
+                        🗑️ Delete Product
+                    </button>
+
+                </div>
+
+            `;
+
+
+            productsContainer.appendChild(
+                card
+            );
+
+
+            /* ==============================
+               DELETE BUTTON
+            ============================== */
+
+            const deleteButton =
+                card.querySelector(
+                    ".delete-button"
+                );
+
+
+            deleteButton.addEventListener(
+                "click",
+                function() {
+
+                    selectedProductId =
+                        product.id;
+
+                    deleteModal.style.display =
+                        "flex";
+
+                }
+            );
+
+        }
+    );
 
 }
 
@@ -690,7 +713,7 @@ cancelDelete.addEventListener(
     "click",
     function() {
 
-        selectedProductIndex =
+        selectedProductId =
             null;
 
         deleteModal.style.display =
@@ -706,121 +729,99 @@ cancelDelete.addEventListener(
 
 confirmDelete.addEventListener(
     "click",
-    function() {
+    async function() {
 
         if (
-            selectedProductIndex ===
+            selectedProductId ===
             null
         ) {
 
             return;
-
         }
 
 
-        let products = [];
+        confirmDelete.disabled = true;
+
+        confirmDelete.textContent =
+            "Deleting...";
 
 
-        try {
+        /* ==============================
+           DELETE FROM SUPABASE
+        ============================== */
 
-            const savedProducts =
-                localStorage.getItem(
-                    "products"
-                );
-
-
-            if (savedProducts) {
-
-                products =
-                    JSON.parse(
-                        savedProducts
-                    );
-
-            }
+        const {
+            error
+        } = await supabaseClient
+            .from("products")
+            .delete()
+            .eq(
+                "id",
+                selectedProductId
+            );
 
 
-            if (
-                !Array.isArray(products)
-            ) {
+        if (error) {
 
-                products = [];
-
-            }
-
-        } catch (error) {
+            console.error(error);
 
             message.textContent =
-                "Could not load products.";
+                "Could not delete product: " +
+                error.message;
 
             message.style.color =
                 "red";
+
+            confirmDelete.disabled =
+                false;
+
+            confirmDelete.textContent =
+                "Yes, Delete";
 
             return;
-
         }
 
 
-        /* DELETE */
+        /* ==============================
+           SUCCESS
+        ============================== */
 
-        products.splice(
-            selectedProductIndex,
-            1
+        deleteModal.style.display =
+            "none";
+
+        selectedProductId =
+            null;
+
+        message.textContent =
+            "Product deleted successfully!";
+
+        message.style.color =
+            "green";
+
+        confirmDelete.disabled =
+            false;
+
+        confirmDelete.textContent =
+            "Yes, Delete";
+
+
+        /* Reload products */
+
+        setTimeout(
+            function() {
+
+                loadMyProducts();
+
+            },
+            500
         );
-
-
-        /* SAVE */
-
-        try {
-
-            localStorage.setItem(
-                "products",
-                JSON.stringify(
-                    products
-                )
-            );
-
-
-            deleteModal.style.display =
-                "none";
-
-
-            selectedProductIndex =
-                null;
-
-
-            message.textContent =
-                "Product deleted successfully!";
-
-            message.style.color =
-                "green";
-
-
-            setTimeout(
-                function() {
-
-                    window.location.reload();
-
-                },
-                700
-            );
-
-
-        } catch (error) {
-
-            message.textContent =
-                "Could not delete product.";
-
-            message.style.color =
-                "red";
-
-        }
 
     }
 );
 
 
 /* =================================
-   CLOSE POPUP BY CLICKING OUTSIDE
+   CLOSE POPUP OUTSIDE
 ================================= */
 
 deleteModal.addEventListener(
@@ -832,7 +833,7 @@ deleteModal.addEventListener(
             deleteModal
         ) {
 
-            selectedProductIndex =
+            selectedProductId =
                 null;
 
             deleteModal.style.display =
@@ -844,9 +845,12 @@ deleteModal.addEventListener(
 );
 
 
+/* =================================
+   START
+================================= */
 
+loadMyProducts();
 
-  
 </script>
 
 
