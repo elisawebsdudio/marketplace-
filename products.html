@@ -5,9 +5,18 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>Products - MarketPlace</title>
+
+
+<!-- SUPABASE -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
 <style>
 
@@ -159,6 +168,14 @@ h1 {
     margin: 15px;
 }
 
+.loading {
+    background: white;
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px;
+    grid-column: 1 / -1;
+}
+
 </style>
 
 </head>
@@ -238,7 +255,14 @@ Other
 </div>
 
 
-<div id="productsContainer"></div>
+<div id="productsContainer">
+
+<div class="loading">
+Loading products...
+</div>
+
+</div>
+
 
 <p id="error"></p>
 
@@ -248,80 +272,69 @@ Other
 <script>
 
 
-/* =========================
+/* =================================
+   SUPABASE CONNECTION
+================================= */
+
+const SUPABASE_URL =
+    "https://zofngbuatccapcypmvkf.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =================================
    ELEMENTS
-========================= */
+================================= */
 
 const productsContainer =
-document.getElementById(
-    "productsContainer"
-);
+    document.getElementById(
+        "productsContainer"
+    );
+
 
 const searchInput =
-document.getElementById(
-    "searchInput"
-);
+    document.getElementById(
+        "searchInput"
+    );
+
 
 const categoryFilter =
-document.getElementById(
-    "categoryFilter"
-);
+    document.getElementById(
+        "categoryFilter"
+    );
+
 
 const errorBox =
-document.getElementById(
-    "error"
-);
+    document.getElementById(
+        "error"
+    );
+
 
 const message =
-document.getElementById(
-    "message"
-);
+    document.getElementById(
+        "message"
+    );
 
 
-/* =========================
-   LOAD PRODUCTS
-========================= */
+/* =================================
+   PRODUCTS
+================================= */
 
 let products = [];
 
 
-try {
-
-    const savedProducts =
-        localStorage.getItem(
-            "products"
-        );
-
-
-    if (savedProducts) {
-
-        products =
-            JSON.parse(
-                savedProducts
-            );
-
-    }
-
-
-    if (!Array.isArray(products)) {
-
-        products = [];
-
-    }
-
-} catch (error) {
-
-    products = [];
-
-    errorBox.textContent =
-        "Could not load products.";
-
-}
-
-
-/* =========================
-   LOAD FAVORITES
-========================= */
+/* =================================
+   FAVORITES
+================================= */
 
 let favorites = [];
 
@@ -357,9 +370,88 @@ try {
 }
 
 
-/* =========================
+/* =================================
+   LOAD PRODUCTS FROM SUPABASE
+================================= */
+
+async function loadProducts() {
+
+    productsContainer.innerHTML = `
+        <div class="loading">
+            Loading products...
+        </div>
+    `;
+
+
+    errorBox.textContent = "";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("products")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        products =
+            Array.isArray(data)
+            ? data
+            : [];
+
+
+        filterProducts();
+
+
+    } catch (error) {
+
+        console.error(
+            "LOAD PRODUCTS ERROR:",
+            error
+        );
+
+
+        productsContainer.innerHTML = `
+            <div class="empty">
+                <h2>
+                    Could not load products
+                </h2>
+
+                <p>
+                    Please try again.
+                </p>
+            </div>
+        `;
+
+
+        errorBox.textContent =
+            error.message ||
+            "Could not load products.";
+
+    }
+
+}
+
+
+/* =================================
    DISPLAY PRODUCTS
-========================= */
+================================= */
 
 function displayProducts(list) {
 
@@ -391,19 +483,11 @@ function displayProducts(list) {
 
 
     list.forEach(
-        function(item) {
-
-            const product =
-                item.product;
-
-            const originalIndex =
-                item.index;
+        function(product) {
 
 
             const productId =
-                product.id !== undefined
-                ? product.id
-                : originalIndex;
+                product.id;
 
 
             const isFavorite =
@@ -430,34 +514,49 @@ function displayProducts(list) {
             card.innerHTML = `
 
                 <img
-                    src="${product.image || ""}"
-                    alt="${product.name || "Product"}"
+                    src="${product.image_url || ""}"
+                    alt="${escapeHTML(
+                        product.name ||
+                        "Product"
+                    )}"
                 >
 
 
                 <div class="product-info">
 
                     <h2>
-                        ${product.name || "Product"}
+                        ${escapeHTML(
+                            product.name ||
+                            "Product"
+                        )}
                     </h2>
 
 
                     <p class="price">
-                        ${product.price || "Price not provided"}
+                        ${escapeHTML(
+                            product.price ||
+                            "Price not provided"
+                        )}
                     </p>
 
 
                     <p>
 
                         <span class="category">
-                            ${product.category || "Other"}
+                            ${escapeHTML(
+                                product.category ||
+                                "Other"
+                            )}
                         </span>
 
                     </p>
 
 
                     <p>
-                        ${product.description || "No description available."}
+                        ${escapeHTML(
+                            product.description ||
+                            "No description available."
+                        )}
                     </p>
 
 
@@ -467,13 +566,18 @@ function displayProducts(list) {
                             Seller:
                         </strong>
 
-                        ${product.sellerName || "Not provided"}
+                        ${escapeHTML(
+                            product.seller_name ||
+                            "Not provided"
+                        )}
 
                     </p>
 
 
                     <a
-                        href="product-details.html?id=${originalIndex}"
+                        href="product-details.html?id=${encodeURIComponent(
+                            productId
+                        )}"
                         class="button details-button"
                     >
                         👁️ View Details
@@ -484,7 +588,11 @@ function displayProducts(list) {
                         type="button"
                         class="button favorite-button"
                     >
-                        ${isFavorite ? "❤️ Remove Favorite" : "♡ Add to Favorites"}
+                        ${
+                            isFavorite
+                            ? "❤️ Remove Favorite"
+                            : "♡ Add to Favorites"
+                        }
                     </button>
 
 
@@ -493,7 +601,9 @@ function displayProducts(list) {
                         ?
                         `
                         <a
-                            href="tel:${product.phone}"
+                            href="tel:${encodeURIComponent(
+                                product.phone
+                            )}"
                             class="button contact-button"
                         >
                             📞 Contact Seller
@@ -513,9 +623,7 @@ function displayProducts(list) {
             );
 
 
-            /* =========================
-               FAVORITE BUTTON
-            ========================= */
+            /* FAVORITE BUTTON */
 
             const favoriteButton =
                 card.querySelector(
@@ -596,9 +704,9 @@ function displayProducts(list) {
 }
 
 
-/* =========================
+/* =================================
    SEARCH + FILTER
-========================= */
+================================= */
 
 function filterProducts() {
 
@@ -613,41 +721,30 @@ function filterProducts() {
 
 
     const filtered =
-        products
-        .map(
-            function(product, index) {
-
-                return {
-                    product: product,
-                    index: index
-                };
-
-            }
-        )
-        .filter(
-            function(item) {
-
-                const product =
-                    item.product;
+        products.filter(
+            function(product) {
 
 
                 const name =
                     String(
-                        product.name || ""
+                        product.name ||
+                        ""
                     )
                     .toLowerCase();
 
 
                 const description =
                     String(
-                        product.description || ""
+                        product.description ||
+                        ""
                     )
                     .toLowerCase();
 
 
                 const productCategory =
                     String(
-                        product.category || ""
+                        product.category ||
+                        ""
                     );
 
 
@@ -677,9 +774,40 @@ function filterProducts() {
 }
 
 
-/* =========================
+/* =================================
+   HTML SAFETY
+================================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =================================
    EVENTS
-========================= */
+================================= */
 
 searchInput.addEventListener(
     "input",
@@ -693,22 +821,11 @@ categoryFilter.addEventListener(
 );
 
 
-/* =========================
-   SHOW PRODUCTS
-========================= */
+/* =================================
+   START
+================================= */
 
-displayProducts(
-    products.map(
-        function(product, index) {
-
-            return {
-                product: product,
-                index: index
-            };
-
-        }
-    )
-);
+loadProducts();
 
 </script>
 
