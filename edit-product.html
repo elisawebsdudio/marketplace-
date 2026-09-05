@@ -410,16 +410,18 @@ async function loadProduct() {
 
     if (error || !product) {
 
-        form.style.display = "none";
+    form.style.display = "none";
 
-        showError(
-            "Product Not Found",
-            "The product you are trying to edit does not exist."
-        );
+    showError(
+        "Could Not Load Product",
+        error
+            ? error.message
+            : "The product was not found in the database."
+    );
 
-        console.error(error);
+    console.error("Supabase error:", error);
 
-        return;
+    return;
     }
 
 
