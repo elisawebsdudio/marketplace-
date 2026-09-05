@@ -3,125 +3,123 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Edit Product - MarketPlace</title>
+<title>Edit Product - MarketPlace</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>
+<style>
 
-        * {
-            box-sizing: border-box;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7f6;
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7f6;
+}
 
-        nav {
-            background: #087f5b;
-            padding: 15px;
-            text-align: center;
-        }
+nav {
+    background: #087f5b;
+    padding: 15px;
+    text-align: center;
+}
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 7px;
-            font-weight: bold;
-        }
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 7px;
+    font-weight: bold;
+}
 
-        .container {
-            width: 92%;
-            max-width: 600px;
-            background: white;
-            margin: 30px auto;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
-        }
+.container {
+    width: 92%;
+    max-width: 600px;
+    background: white;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+}
 
-        h1 {
-            text-align: center;
-            color: #087f5b;
-        }
+h1 {
+    text-align: center;
+    color: #087f5b;
+}
 
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
+label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
 
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 7px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 15px;
-        }
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 7px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 15px;
+}
 
-        textarea {
-            height: 120px;
-            resize: vertical;
-        }
+textarea {
+    height: 120px;
+    resize: vertical;
+}
 
-        #currentImage {
-            width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            margin-top: 15px;
-            border-radius: 8px;
-            background: #eee;
-        }
+#currentImage {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    margin-top: 15px;
+    border-radius: 8px;
+    background: #eee;
+}
 
-        button {
-            width: 100%;
-            padding: 13px;
-            margin-top: 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
 
-        .save-button {
-            background: #087f5b;
-            color: white;
-        }
+.save-button {
+    background: #087f5b;
+    color: white;
+}
 
-        .back-button {
-            background: #777;
-            color: white;
-        }
+.back-button {
+    background: #777;
+    color: white;
+}
 
-        #message {
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-        }
+#message {
+    text-align: center;
+    margin: 15px 0;
+    font-weight: bold;
+    line-height: 1.5;
+}
 
-        .error-box {
-            text-align: center;
-            padding: 20px;
-        }
+.error-box {
+    text-align: center;
+    padding: 20px;
+}
 
-        .error-box a {
-            color: #087f5b;
-            font-weight: bold;
-        }
+.error-box a {
+    color: #087f5b;
+    font-weight: bold;
+}
 
-    </style>
+</style>
 
 </head>
 
@@ -129,224 +127,223 @@
 <body>
 
 
-    <nav>
+<nav>
 
-        <a href="index.html">Home</a>
+<a href="index.html">Home</a>
 
-        <a href="products.html">Products</a>
+<a href="products.html">Products</a>
 
-        <a href="post-products.html">Post Product</a>
+<a href="post-products.html">Post Product</a>
 
-        <a href="my-products.html">My Products</a>
+<a href="my-products.html">My Products</a>
 
-        <a href="account.html">My Account</a>
+<a href="account.html">My Account</a>
 
-    </nav>
-
-
-    <div class="container">
-
-        <h1>
-            Edit Product
-        </h1>
+</nav>
 
 
-        <div id="message"></div>
+<div class="container">
+
+<h1>
+Edit Product
+</h1>
+
+<div id="message">
+Loading product...
+</div>
 
 
-        <form id="editForm">
+<form id="editForm" style="display:none;">
 
-            <label for="productName">
-                Product Name
-            </label>
+<label for="productName">
+Product Name
+</label>
 
-            <input
-                type="text"
-                id="productName"
-                required
-            >
-
-
-            <label for="price">
-                Price
-            </label>
-
-            <input
-                type="text"
-                id="price"
-                required
-            >
+<input
+type="text"
+id="productName"
+required
+>
 
 
-            <label for="category">
-                Category
-            </label>
+<label for="price">
+Price
+</label>
 
-            <select
-                id="category"
-                required
-            >
-
-                <option value="">
-                    Select category
-                </option>
-
-                <option value="Clothes">
-                    Clothes
-                </option>
-
-                <option value="Shoes">
-                    Shoes
-                </option>
-
-                <option value="Electronics">
-                    Electronics
-                </option>
-
-                <option value="Phones">
-                    Phones
-                </option>
-
-                <option value="Furniture">
-                    Furniture
-                </option>
-
-                <option value="Other">
-                    Other
-                </option>
-
-            </select>
+<input
+type="text"
+id="price"
+required
+>
 
 
-            <label for="image">
-                Change Product Image
-            </label>
+<label for="category">
+Category
+</label>
 
-            <input
-                type="file"
-                id="image"
-                accept="image/*"
-            >
+<select
+id="category"
+required
+>
 
+<option value="">
+Select category
+</option>
 
-            <img
-                id="currentImage"
-                alt="Current Product Image"
-            >
+<option value="Clothes">
+Clothes
+</option>
 
+<option value="Shoes">
+Shoes
+</option>
 
-            <label for="description">
-                Description
-            </label>
+<option value="Electronics">
+Electronics
+</option>
 
-            <textarea
-                id="description"
-                required
-            ></textarea>
+<option value="Phones">
+Phones
+</option>
 
+<option value="Furniture">
+Furniture
+</option>
 
-            <label for="sellerName">
-                Seller Name
-            </label>
+<option value="Other">
+Other
+</option>
 
-            <input
-                type="text"
-                id="sellerName"
-                required
-            >
-
-
-            <label for="phone">
-                Phone Number
-            </label>
-
-            <input
-                type="tel"
-                id="phone"
-                required
-            >
+</select>
 
 
-            <button
-                type="submit"
-                class="save-button"
-                id="saveButton"
-            >
-                Save Changes
-            </button>
+<label for="image">
+Change Product Image
+</label>
+
+<input
+type="file"
+id="image"
+accept="image/*"
+>
 
 
-            <button
-                type="button"
-                class="back-button"
-                id="backButton"
-            >
-                Cancel
-            </button>
+<img
+id="currentImage"
+alt="Current Product Image"
+>
 
-        </form>
 
-    </div>
+<label for="description">
+Description
+</label>
+
+<textarea
+id="description"
+required
+></textarea>
+
+
+<label for="sellerName">
+Seller Name
+</label>
+
+<input
+type="text"
+id="sellerName"
+required
+>
+
+
+<label for="phone">
+Phone Number
+</label>
+
+<input
+type="tel"
+id="phone"
+required
+>
+
+
+<button
+type="submit"
+class="save-button"
+id="saveButton"
+>
+Save Changes
+</button>
+
+
+<button
+type="button"
+class="back-button"
+id="backButton"
+>
+Cancel
+</button>
+
+</form>
+
+</div>
 
 
 <script>
 
-
 /* =================================
-   SUPABASE CONNECTION
+   SUPABASE
 ================================= */
 
 const SUPABASE_URL =
-    "https://zofngbuatccapcypmvkf.supabase.co";
+"https://zofngbuatccapcypmvkf.supabase.co";
 
 const SUPABASE_KEY =
-    "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
+"sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
 
 const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
 
 /* =================================
-   PAGE ELEMENTS
+   ELEMENTS
 ================================= */
 
 const form =
-    document.getElementById("editForm");
+document.getElementById("editForm");
 
 const message =
-    document.getElementById("message");
+document.getElementById("message");
 
 const currentImage =
-    document.getElementById("currentImage");
+document.getElementById("currentImage");
 
 const imageInput =
-    document.getElementById("image");
+document.getElementById("image");
 
 const saveButton =
-    document.getElementById("saveButton");
+document.getElementById("saveButton");
 
 
 /* =================================
-   GET PRODUCT ID
+   PRODUCT ID
 ================================= */
 
 const params =
-    new URLSearchParams(
-        window.location.search
-    );
+new URLSearchParams(
+    window.location.search
+);
 
 const productId =
-    params.get("id");
+params.get("id");
 
 
-/* =================================
-   CURRENT PRODUCT
-================================= */
-
-let currentProduct = null;
+console.log(
+    "Product ID:",
+    productId
+);
 
 
 /* =================================
@@ -355,191 +352,258 @@ let currentProduct = null;
 
 async function loadProduct() {
 
-    if (!productId) {
+    try {
 
-        showError(
-            "Product Not Found",
-            "No product ID was provided."
+        /* CHECK ID */
+
+        if (!productId) {
+
+            throw new Error(
+                "No product ID was found in the page URL."
+            );
+
+        }
+
+
+        message.textContent =
+            "Checking your login...";
+
+
+        /* CHECK LOGIN */
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient.auth.getUser();
+
+
+        if (error) {
+
+            throw new Error(
+                "Login check failed: " +
+                error.message
+            );
+
+        }
+
+
+        const user =
+            data.user;
+
+
+        if (!user) {
+
+            form.style.display =
+                "none";
+
+            message.innerHTML = `
+
+                <div class="error-box">
+
+                    <h2>
+                        Login Required
+                    </h2>
+
+                    <p>
+                        Please login before
+                        editing a product.
+                    </p>
+
+                    <a href="login.html">
+                        Login
+                    </a>
+
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        message.textContent =
+            "Loading product...";
+
+
+        /* GET PRODUCT */
+
+        const {
+            data: product,
+            error: productError
+        } =
+        await supabaseClient
+            .from("products")
+            .select("*")
+            .eq("id", productId)
+            .maybeSingle();
+
+
+        if (productError) {
+
+            throw new Error(
+                "Database error: " +
+                productError.message
+            );
+
+        }
+
+
+        if (!product) {
+
+            throw new Error(
+                "No product was found with ID: " +
+                productId
+            );
+
+        }
+
+
+        console.log(
+            "Product:",
+            product
         );
 
-        return;
-    }
+
+        /* CHECK SELLER */
+
+        if (
+            String(product.seller_email)
+                .trim()
+                .toLowerCase()
+            !==
+            String(user.email)
+                .trim()
+                .toLowerCase()
+        ) {
+
+            form.style.display =
+                "none";
+
+            message.innerHTML = `
+
+                <div class="error-box">
+
+                    <h2>
+                        Access Denied
+                    </h2>
+
+                    <p>
+                        You can only edit
+                        your own products.
+                    </p>
+
+                    <a href="my-products.html">
+                        Back to My Products
+                    </a>
+
+                </div>
+
+            `;
+
+            return;
+        }
 
 
-    /* ==============================
-       CHECK USER
-    ============================== */
+        /* FILL FORM */
 
-    const {
-        data: {
-            user
-        },
-        error: userError
-    } = await supabaseClient.auth.getUser();
-
-
-    if (
-        userError ||
-        !user
-    ) {
-
-        form.style.display = "none";
-
-        showError(
-            "Login Required",
-            "Please login before editing a product."
-        );
-
-        return;
-    }
-
-
-    /* ==============================
-       GET PRODUCT
-    ============================== */
-
-    const {
-        data: product,
-        error
-    } = await supabaseClient
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .single();
-
-
-    if (error || !product) {
-
-    form.style.display = "none";
-
-    showError(
-        "Could Not Load Product",
-        error
-            ? error.message
-            : "The product was not found in the database."
-    );
-
-    console.error("Supabase error:", error);
-
-    return;
-    }
-
-
-    /* ==============================
-       CHECK SELLER
-    ============================== */
-
-    if (
-        String(product.seller_email || "")
-            .trim()
-            .toLowerCase() !==
-        String(user.email || "")
-            .trim()
-            .toLowerCase()
-    ) {
-
-        form.style.display = "none";
-
-        showError(
-            "Access Denied",
-            "You can only edit your own products."
-        );
-
-        return;
-    }
-
-
-    /* ==============================
-       SAVE CURRENT PRODUCT
-    ============================== */
-
-    currentProduct =
-        product;
-
-
-    /* ==============================
-       FILL FORM
-    ============================== */
-
-    document
-        .getElementById("productName")
-        .value =
+        document.getElementById(
+            "productName"
+        ).value =
             product.name || "";
 
 
-    document
-        .getElementById("price")
-        .value =
+        document.getElementById(
+            "price"
+        ).value =
             product.price || "";
 
 
-    document
-        .getElementById("category")
-        .value =
+        document.getElementById(
+            "category"
+        ).value =
             product.category || "";
 
 
-    document
-        .getElementById("description")
-        .value =
+        document.getElementById(
+            "description"
+        ).value =
             product.description || "";
 
 
-    document
-        .getElementById("sellerName")
-        .value =
+        document.getElementById(
+            "sellerName"
+        ).value =
             product.seller_name || "";
 
 
-    document
-        .getElementById("phone")
-        .value =
+        document.getElementById(
+            "phone"
+        ).value =
             product.phone || "";
 
 
-    if (product.image_url) {
+        /* IMAGE */
 
-        currentImage.src =
-            product.image_url;
+        if (product.image_url) {
 
-    } else {
+            currentImage.src =
+                product.image_url;
 
-        currentImage.style.display =
+            currentImage.style.display =
+                "block";
+
+        } else {
+
+            currentImage.style.display =
+                "none";
+
+        }
+
+
+        message.textContent =
+            "";
+
+        form.style.display =
+            "block";
+
+
+        /* SAVE PRODUCT REFERENCE */
+
+        window.currentProduct =
+            product;
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        form.style.display =
             "none";
 
+        message.innerHTML = `
+
+            <div class="error-box">
+
+                <h2>
+                    Could Not Load Product
+                </h2>
+
+                <p>
+                    ${error.message}
+                </p>
+
+                <br>
+
+                <a href="my-products.html">
+                    Back to My Products
+                </a>
+
+            </div>
+
+        `;
+
     }
-
-}
-
-
-/* =================================
-   SHOW ERROR
-================================= */
-
-function showError(
-    title,
-    text
-) {
-
-    message.innerHTML = `
-
-        <div class="error-box">
-
-            <h2>
-                ${title}
-            </h2>
-
-            <p>
-                ${text}
-            </p>
-
-            <a href="my-products.html">
-                Back to My Products
-            </a>
-
-        </div>
-
-    `;
 
 }
 
@@ -549,18 +613,291 @@ function showError(
 ================================= */
 
 imageInput.addEventListener(
-    "change",
-    function() {
+"change",
+function() {
 
-        const file =
-            imageInput.files[0];
+    const file =
+        imageInput.files[0];
 
-        if (!file) {
+    if (!file) {
+        return;
+    }
+
+
+    if (
+        file.size >
+        700 * 1024
+    ) {
+
+        message.textContent =
+            "Image must be smaller than 700 KB.";
+
+        message.style.color =
+            "red";
+
+        imageInput.value =
+            "";
+
+        return;
+    }
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload =
+        function(event) {
+
+            currentImage.src =
+                event.target.result;
+
+            currentImage.style.display =
+                "block";
+
+        };
+
+
+    reader.readAsDataURL(file);
+
+}
+);
+
+
+/* =================================
+   SAVE CHANGES
+================================= */
+
+form.addEventListener(
+"submit",
+async function(event) {
+
+    event.preventDefault();
+
+
+    if (!window.currentProduct) {
+
+        return;
+    }
+
+
+    saveButton.disabled =
+        true;
+
+    saveButton.textContent =
+        "Saving...";
+
+
+    const name =
+        document.getElementById(
+            "productName"
+        ).value.trim();
+
+
+    const price =
+        document.getElementById(
+            "price"
+        ).value.trim();
+
+
+    const category =
+        document.getElementById(
+            "category"
+        ).value;
+
+
+    const description =
+        document.getElementById(
+            "description"
+        ).value.trim();
+
+
+    const sellerName =
+        document.getElementById(
+            "sellerName"
+        ).value.trim();
+
+
+    const phone =
+        document.getElementById(
+            "phone"
+        ).value.trim();
+
+
+    let imageUrl =
+        window.currentProduct.image_url ||
+        null;
+
+
+    /* NEW IMAGE */
+
+    const file =
+        imageInput.files[0];
+
+
+    if (file) {
+
+        const extension =
+            file.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+
+        const filePath =
+            window.currentProduct.id +
+            "_" +
+            Date.now() +
+            "." +
+            extension;
+
+
+        const {
+            error: uploadError
+        } =
+        await supabaseClient
+            .storage
+            .from("product-images")
+            .upload(
+                filePath,
+                file
+            );
+
+
+        if (uploadError) {
+
+            message.textContent =
+                "Image upload failed: " +
+                uploadError.message;
+
+            message.style.color =
+                "red";
+
+            saveButton.disabled =
+                false;
+
+            saveButton.textContent =
+                "Save Changes";
+
             return;
         }
 
 
-        if (
-            file.size >
-            700 * 1024
-        )
+        const {
+            data: publicData
+        } =
+        supabaseClient
+            .storage
+            .from("product-images")
+            .getPublicUrl(
+                filePath
+            );
+
+
+        imageUrl =
+            publicData.publicUrl;
+
+    }
+
+
+    /* UPDATE DATABASE */
+
+    const {
+        error
+    } =
+    await supabaseClient
+        .from("products")
+        .update({
+
+            name: name,
+
+            price: price,
+
+            category: category,
+
+            description: description,
+
+            image_url: imageUrl,
+
+            seller_name: sellerName,
+
+            phone: phone
+
+        })
+        .eq(
+            "id",
+            window.currentProduct.id
+        );
+
+
+    if (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Update failed: " +
+            error.message;
+
+        message.style.color =
+            "red";
+
+        saveButton.disabled =
+            false;
+
+        saveButton.textContent =
+            "Save Changes";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Product updated successfully!";
+
+    message.style.color =
+        "green";
+
+
+    setTimeout(
+        function() {
+
+            window.location.href =
+                "my-products.html";
+
+        },
+        1000
+    );
+
+}
+);
+
+
+/* =================================
+   CANCEL
+================================= */
+
+document
+.getElementById("backButton")
+.addEventListener(
+"click",
+function() {
+
+    window.location.href =
+        "my-products.html";
+
+}
+);
+
+
+/* =================================
+   START
+================================= */
+
+loadProduct();
+
+</script>
+
+
+</body>
+
+</html>
