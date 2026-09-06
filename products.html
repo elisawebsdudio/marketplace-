@@ -5,10 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Products - MarketPlace</title>
 
@@ -74,8 +71,7 @@ h1 {
 
 #productsContainer {
     display: grid;
-    grid-template-columns:
-        repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
 }
 
@@ -139,12 +135,18 @@ h1 {
     color: white;
 }
 
+.favorite-button.saved {
+    background: #555;
+}
+
 .contact-button {
     background: #1b8f3d;
     color: white;
 }
 
-.empty {
+.empty,
+.loading,
+.login-box {
     background: white;
     padding: 30px;
     text-align: center;
@@ -164,39 +166,11 @@ h1 {
     margin: 15px;
 }
 
-.loading {
-    background: white;
-    padding: 30px;
-    text-align: center;
-    border-radius: 10px;
-    grid-column: 1 / -1;
-}
-
-.login-box {
-    background: white;
-    padding: 30px;
-    text-align: center;
-    border-radius: 10px;
-    grid-column: 1 / -1;
-}
-
-.login-box a {
-    display: inline-block;
-    margin-top: 15px;
-    padding: 12px 20px;
-    background: #087f5b;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-}
-
 </style>
 
 </head>
 
-
 <body>
-
 
 <nav>
 
@@ -217,10 +191,7 @@ h1 {
 
 <div class="container">
 
-<h1>
-Products
-</h1>
-
+<h1>Products</h1>
 
 <p id="message"></p>
 
@@ -233,36 +204,21 @@ Products
     placeholder="Search for a product..."
 >
 
-
 <select id="categoryFilter">
 
-<option value="all">
-All Categories
-</option>
+<option value="all">All Categories</option>
 
-<option value="Clothes">
-Clothes
-</option>
+<option value="Clothes">Clothes</option>
 
-<option value="Shoes">
-Shoes
-</option>
+<option value="Shoes">Shoes</option>
 
-<option value="Electronics">
-Electronics
-</option>
+<option value="Electronics">Electronics</option>
 
-<option value="Phones">
-Phones
-</option>
+<option value="Phones">Phones</option>
 
-<option value="Furniture">
-Furniture
-</option>
+<option value="Furniture">Furniture</option>
 
-<option value="Other">
-Other
-</option>
+<option value="Other">Other</option>
 
 </select>
 
@@ -277,7 +233,6 @@ Loading products...
 
 </div>
 
-
 <p id="error"></p>
 
 </div>
@@ -285,24 +240,15 @@ Loading products...
 
 <script>
 
-
-/* =================================
-   SUPABASE CONNECTION
-================================= */
+/* =========================================
+   SUPABASE
+========================================= */
 
 const SUPABASE_URL =
     "https://zofngbuatccapcypmvkf.supabase.co";
 
-
-/*
-   IMPORTANT:
-   Keep the SAME publishable key
-   you were already using here.
-*/
-
 const SUPABASE_KEY =
     "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
-
 
 const supabaseClient =
     window.supabase.createClient(
@@ -311,94 +257,66 @@ const supabaseClient =
     );
 
 
-/* =================================
+/* =========================================
    ELEMENTS
-================================= */
+========================================= */
 
 const productsContainer =
-    document.getElementById(
-        "productsContainer"
-    );
-
+    document.getElementById("productsContainer");
 
 const searchInput =
-    document.getElementById(
-        "searchInput"
-    );
-
+    document.getElementById("searchInput");
 
 const categoryFilter =
-    document.getElementById(
-        "categoryFilter"
-    );
-
+    document.getElementById("categoryFilter");
 
 const errorBox =
-    document.getElementById(
-        "error"
-    );
-
+    document.getElementById("error");
 
 const message =
-    document.getElementById(
-        "message"
-    );
+    document.getElementById("message");
 
 
-/* =================================
-   PRODUCTS
-================================= */
+/* =========================================
+   DATA
+========================================= */
 
 let products = [];
-
-
-/* =================================
-   SUPABASE FAVORITES
-================================= */
 
 let favorites = [];
 
 let currentUser = null;
 
 
-/* =================================
-   GET CURRENT USER
-================================= */
+/* =========================================
+   GET LOGGED-IN USER
+========================================= */
 
 async function getCurrentUser() {
 
     const {
         data,
         error
-    } =
-    await supabaseClient.auth.getUser();
-
+    } = await supabaseClient.auth.getUser();
 
     if (error) {
 
-        console.error(
-            "AUTH ERROR:",
-            error
-        );
+        console.error("AUTH ERROR:", error);
 
         return null;
     }
 
-
     return data.user || null;
-
 }
 
 
-/* =================================
-   LOAD USER FAVORITES
-================================= */
+/* =========================================
+   LOAD FAVORITES
+========================================= */
 
 async function loadFavorites() {
 
-    currentUser =
-        await getCurrentUser();
-
+    currentUser = await getCurrentUser();
 
     if (!currentUser) {
 
@@ -411,20 +329,16 @@ async function loadFavorites() {
     const {
         data,
         error
-    } =
-    await supabaseClient
+    } = await supabaseClient
         .from("favorites")
         .select("product_id")
-        .eq(
-            "user_id",
-            currentUser.id
-        );
+        .eq("user_id", currentUser.id);
 
 
     if (error) {
 
         console.error(
-            "LOAD FAVORITES ERROR:",
+            "FAVORITES LOAD ERROR:",
             error
         );
 
@@ -434,23 +348,18 @@ async function loadFavorites() {
     }
 
 
-    favorites =
-        Array.isArray(data)
-        ? data.map(
-            function(row) {
-                return String(
-                    row.product_id
-                );
-            }
-        )
-        : [];
+    favorites = (data || []).map(function(row) {
+
+        return String(row.product_id);
+
+    });
 
 }
 
 
-/* =================================
+/* =========================================
    LOAD PRODUCTS
-================================= */
+========================================= */
 
 async function loadProducts() {
 
@@ -460,89 +369,50 @@ async function loadProducts() {
         </div>
     `;
 
-
     errorBox.textContent = "";
 
-
-    try {
-
-        /*
-           Load login first
-        */
-
-        await loadFavorites();
+    await loadFavorites();
 
 
-        /*
-           Load products
-        */
-
-        const {
-            data,
-            error
-        } =
-        await supabaseClient
-            .from("products")
-            .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("products")
+        .select("*")
+        .order("created_at", {
+            ascending: false
+        });
 
 
-        if (error) {
-
-            throw error;
-
-        }
-
-
-        products =
-            Array.isArray(data)
-            ? data
-            : [];
-
-
-        filterProducts();
-
-
-    } catch (error) {
+    if (error) {
 
         console.error(
-            "LOAD PRODUCTS ERROR:",
+            "PRODUCT LOAD ERROR:",
             error
         );
 
-
         productsContainer.innerHTML = `
             <div class="empty">
-
-                <h2>
-                    Could not load products
-                </h2>
-
-                <p>
-                    Please try again.
-                </p>
-
+                <h2>Could not load products</h2>
+                <p>${escapeHTML(error.message)}</p>
             </div>
         `;
 
-
-        errorBox.textContent =
-            error.message ||
-            "Could not load products.";
-
+        return;
     }
+
+
+    products = data || [];
+
+    filterProducts();
 
 }
 
 
-/* =================================
+/* =========================================
    DISPLAY PRODUCTS
-================================= */
+========================================= */
 
 function displayProducts(list) {
 
@@ -552,392 +422,327 @@ function displayProducts(list) {
     if (list.length === 0) {
 
         productsContainer.innerHTML = `
-
             <div class="empty">
 
-                <h2>
-                    No Products Found
-                </h2>
+                <h2>No Products Found</h2>
 
                 <p>
-                    Try another search
-                    or category.
+                    Try another search or category.
                 </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    list.forEach(function(product) {
+
+        const productId =
+            String(product.id);
+
+
+        const isFavorite =
+            favorites.includes(productId);
+
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "product-card";
+
+
+        card.innerHTML = `
+
+            <img
+                src="${escapeHTML(
+                    product.image_url || ""
+                )}"
+                alt="${escapeHTML(
+                    product.name || "Product"
+                )}"
+            >
+
+
+            <div class="product-info">
+
+                <h2>
+                    ${escapeHTML(
+                        product.name || "Product"
+                    )}
+                </h2>
+
+
+                <p class="price">
+                    ${escapeHTML(
+                        product.price ||
+                        "Price not provided"
+                    )}
+                </p>
+
+
+                <p>
+
+                    <span class="category">
+                        ${escapeHTML(
+                            product.category ||
+                            "Other"
+                        )}
+                    </span>
+
+                </p>
+
+
+                <p>
+                    ${escapeHTML(
+                        product.description ||
+                        "No description available."
+                    )}
+                </p>
+
+
+                <p>
+
+                    <strong>Seller:</strong>
+
+                    ${escapeHTML(
+                        product.seller_name ||
+                        "Not provided"
+                    )}
+
+                </p>
+
+
+                <a
+                    href="product-details.html?id=${encodeURIComponent(
+                        productId
+                    )}"
+                    class="button details-button"
+                >
+                    👁️ View Details
+                </a>
+
+
+                <button
+                    type="button"
+                    class="button favorite-button ${
+                        isFavorite ? "saved" : ""
+                    }"
+                >
+                    ${
+                        isFavorite
+                        ? "❤️ Remove Favorite"
+                        : "♡ Add to Favorites"
+                    }
+                </button>
+
+
+                ${
+                    product.phone
+                    ?
+                    `
+                    <a
+                        href="tel:${encodeURIComponent(
+                            product.phone
+                        )}"
+                        class="button contact-button"
+                    >
+                        📞 Contact Seller
+                    </a>
+                    `
+                    :
+                    ""
+                }
 
             </div>
 
         `;
 
-        return;
 
-    }
-
-
-    list.forEach(
-        function(product) {
+        productsContainer.appendChild(card);
 
 
-            const productId =
-                product.id;
+        const favoriteButton =
+            card.querySelector(".favorite-button");
 
 
-            const isFavorite =
-                favorites.some(
-                    function(id) {
+        /* =========================================
+           FAVORITE BUTTON
+        ========================================= */
 
-                        return String(id) ===
-                            String(productId);
+        favoriteButton.addEventListener(
+            "click",
+            async function() {
 
-                    }
-                );
+                if (!currentUser) {
 
+                    message.textContent =
+                        "Please login to save favorites.";
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+                    message.style.color =
+                        "red";
 
-
-            card.className =
-                "product-card";
-
-
-            card.innerHTML = `
-
-                <img
-                    src="${escapeHTML(
-                        product.image_url || ""
-                    )}"
-                    alt="${escapeHTML(
-                        product.name ||
-                        "Product"
-                    )}"
-                >
+                    return;
+                }
 
 
-                <div class="product-info">
-
-                    <h2>
-                        ${escapeHTML(
-                            product.name ||
-                            "Product"
-                        )}
-                    </h2>
+                favoriteButton.disabled = true;
 
 
-                    <p class="price">
-                        ${escapeHTML(
-                            product.price ||
-                            "Price not provided"
-                        )}
-                    </p>
+                const alreadyFavorite =
+                    favorites.includes(productId);
 
 
-                    <p>
+                /* =================================
+                   ADD FAVORITE
+                ================================= */
 
-                        <span class="category">
-                            ${escapeHTML(
-                                product.category ||
-                                "Other"
-                            )}
-                        </span>
+                if (!alreadyFavorite) {
 
-                    </p>
-
-
-                    <p>
-                        ${escapeHTML(
-                            product.description ||
-                            "No description available."
-                        )}
-                    </p>
+                    const {
+                        data,
+                        error
+                    } = await supabaseClient
+                        .from("favorites")
+                        .insert({
+                            user_id: currentUser.id,
+                            product_id: productId
+                        })
+                        .select();
 
 
-                    <p>
+                    if (error) {
 
-                        <strong>
-                            Seller:
-                        </strong>
-
-                        ${escapeHTML(
-                            product.seller_name ||
-                            "Not provided"
-                        )}
-
-                    </p>
-
-
-                    <a
-                        href="product-details.html?id=${encodeURIComponent(
-                            productId
-                        )}"
-                        class="button details-button"
-                    >
-                        👁️ View Details
-                    </a>
-
-
-                    <button
-                        type="button"
-                        class="button favorite-button"
-                    >
-                        ${
-                            isFavorite
-                            ? "❤️ Remove Favorite"
-                            : "♡ Add to Favorites"
-                        }
-                    </button>
-
-
-                    ${
-                        product.phone
-                        ?
-                        `
-                        <a
-                            href="tel:${encodeURIComponent(
-                                product.phone
-                            )}"
-                            class="button contact-button"
-                        >
-                            📞 Contact Seller
-                        </a>
-                        `
-                        :
-                        ""
-                    }
-
-                </div>
-
-            `;
-
-
-            productsContainer.appendChild(
-                card
-            );
-
-
-            /* =================================
-               FAVORITE BUTTON
-            ================================= */
-
-            const favoriteButton =
-                card.querySelector(
-                    ".favorite-button"
-                );
-
-
-            favoriteButton.addEventListener(
-                "click",
-                async function() {
-
-                    /*
-                       LOGIN CHECK
-                    */
-
-                    if (!currentUser) {
+                        console.error(
+                            "INSERT FAVORITE ERROR:",
+                            error
+                        );
 
                         message.textContent =
-                            "Please login to save favorites.";
+                            "Could not save favorite: " +
+                            error.message;
 
                         message.style.color =
-                            "#d62828";
+                            "red";
 
-                        setTimeout(
-                            function() {
-
-                                window.location.href =
-                                    "login.html";
-
-                            },
-                            1000
-                        );
+                        favoriteButton.disabled =
+                            false;
 
                         return;
                     }
 
 
-                    /*
-                       CHECK IF ALREADY FAVORITE
-                    */
+                    console.log(
+                        "FAVORITE SAVED:",
+                        data
+                    );
 
-                    const alreadyFavorite =
-                        favorites.some(
+
+                    favorites.push(productId);
+
+
+                    favoriteButton.textContent =
+                        "❤️ Remove Favorite";
+
+                    favoriteButton.classList.add(
+                        "saved"
+                    );
+
+
+                    message.textContent =
+                        "Added to favorites!";
+
+                    message.style.color =
+                        "#087f5b";
+
+                }
+
+
+                /* =================================
+                   REMOVE FAVORITE
+                ================================= */
+
+                else {
+
+                    const {
+                        error
+                    } = await supabaseClient
+                        .from("favorites")
+                        .delete()
+                        .eq(
+                            "user_id",
+                            currentUser.id
+                        )
+                        .eq(
+                            "product_id",
+                            productId
+                        );
+
+
+                    if (error) {
+
+                        console.error(
+                            "DELETE FAVORITE ERROR:",
+                            error
+                        );
+
+                        message.textContent =
+                            "Could not remove favorite: " +
+                            error.message;
+
+                        message.style.color =
+                            "red";
+
+                        favoriteButton.disabled =
+                            false;
+
+                        return;
+                    }
+
+
+                    favorites =
+                        favorites.filter(
                             function(id) {
 
-                                return String(id) ===
-                                    String(productId);
+                                return id !== productId;
 
                             }
                         );
 
 
-                    favoriteButton.disabled =
-                        true;
+                    favoriteButton.textContent =
+                        "♡ Add to Favorites";
+
+                    favoriteButton.classList.remove(
+                        "saved"
+                    );
 
 
-                    if (!alreadyFavorite) {
+                    message.textContent =
+                        "Removed from favorites.";
 
-                        /*
-                           ADD FAVORITE
-                        */
-
-                        const {
-                            error: insertError
-                        } =
-                        await supabaseClient
-                            .from("favorites")
-                            .insert({
-
-                                user_id:
-                                    currentUser.id,
-
-                                product_id:
-                                    String(productId)
-
-                            });
-
-
-                        if (insertError) {
-
-                            console.error(
-                                "ADD FAVORITE ERROR:",
-                                insertError
-                            );
-
-
-                            /*
-                               Duplicate protection
-                            */
-
-                            if (
-                                insertError.code ===
-                                "23505"
-                            ) {
-
-                                favorites.push(
-                                    String(
-                                        productId
-                                    )
-                                );
-
-                                favoriteButton.textContent =
-                                    "❤️ Remove Favorite";
-
-                            } else {
-
-                                message.textContent =
-                                    "Could not add favorite: " +
-                                    insertError.message;
-
-                                message.style.color =
-                                    "red";
-
-                            }
-
-
-                        } else {
-
-                            favorites.push(
-                                String(
-                                    productId
-                                )
-                            );
-
-
-                            favoriteButton.textContent =
-                                "❤️ Remove Favorite";
-
-
-                            message.textContent =
-                                "Added to favorites!";
-
-                            message.style.color =
-                                "#087f5b";
-
-                        }
-
-
-                    } else {
-
-                        /*
-                           REMOVE FAVORITE
-                        */
-
-                        const {
-                            error: deleteError
-                        } =
-                        await supabaseClient
-                            .from("favorites")
-                            .delete()
-                            .eq(
-                                "user_id",
-                                currentUser.id
-                            )
-                            .eq(
-                                "product_id",
-                                String(productId)
-                            );
-
-
-                        if (deleteError) {
-
-                            console.error(
-                                "REMOVE FAVORITE ERROR:",
-                                deleteError
-                            );
-
-
-                            message.textContent =
-                                "Could not remove favorite: " +
-                                deleteError.message;
-
-                            message.style.color =
-                                "red";
-
-
-                        } else {
-
-                            favorites =
-                                favorites.filter(
-                                    function(id) {
-
-                                        return String(id) !==
-                                            String(productId);
-
-                                    }
-                                );
-
-
-                            favoriteButton.textContent =
-                                "♡ Add to Favorites";
-
-
-                            message.textContent =
-                                "Removed from favorites.";
-
-                            message.style.color =
-                                "#d62828";
-
-                        }
-
-                    }
-
-
-                    favoriteButton.disabled =
-                        false;
+                    message.style.color =
+                        "#d62828";
 
                 }
-            );
 
-        }
-    );
+
+                favoriteButton.disabled =
+                    false;
+
+            }
+        );
+
+    });
 
 }
 
 
-/* =================================
-   SEARCH + FILTER
-================================= */
+/* =========================================
+   SEARCH + CATEGORY
+========================================= */
 
 function filterProducts() {
 
@@ -955,27 +760,21 @@ function filterProducts() {
         products.filter(
             function(product) {
 
-
                 const name =
                     String(
-                        product.name ||
-                        ""
-                    )
-                    .toLowerCase();
+                        product.name || ""
+                    ).toLowerCase();
 
 
                 const description =
                     String(
-                        product.description ||
-                        ""
-                    )
-                    .toLowerCase();
+                        product.description || ""
+                    ).toLowerCase();
 
 
                 const productCategory =
                     String(
-                        product.category ||
-                        ""
+                        product.category || ""
                     );
 
 
@@ -998,53 +797,35 @@ function filterProducts() {
         );
 
 
-    displayProducts(
-        filtered
-    );
+    displayProducts(filtered);
 
 }
 
 
-/* =================================
-   HTML SAFETY
-================================= */
+/* =========================================
+   ESCAPE HTML
+========================================= */
 
 function escapeHTML(value) {
 
     return String(value ?? "")
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
 
 
-/* =================================
+/* =========================================
    EVENTS
-================================= */
+========================================= */
 
 searchInput.addEventListener(
     "input",
     filterProducts
 );
-
 
 categoryFilter.addEventListener(
     "change",
@@ -1052,9 +833,9 @@ categoryFilter.addEventListener(
 );
 
 
-/* =================================
+/* =========================================
    START
-================================= */
+========================================= */
 
 loadProducts();
 
