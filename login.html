@@ -12,7 +12,6 @@
 
     <title>Login - MarketPlace</title>
 
-
     <style>
 
         * {
@@ -89,22 +88,16 @@
             right: 8px;
             top: 50%;
             transform: translateY(-50%);
-
             width: 35px;
             height: 35px;
-
             padding: 0;
             margin: 0;
-
             background: transparent;
             color: #555;
-
             border: none;
             border-radius: 50%;
-
             font-size: 18px;
             cursor: pointer;
-
             display: flex;
             align-items: center;
             justify-content: center;
@@ -115,11 +108,11 @@
             color: #087f5b;
         }
 
-        .login-button {
+        .login-button,
+        .reset-button {
             width: 100%;
             padding: 13px;
             margin-top: 22px;
-            background: #087f5b;
             color: white;
             border: none;
             border-radius: 6px;
@@ -127,19 +120,60 @@
             cursor: pointer;
         }
 
+        .login-button {
+            background: #087f5b;
+        }
+
         .login-button:hover {
             background: #066b4d;
         }
 
-        .login-button:disabled {
+        .login-button:disabled,
+        .reset-button:disabled {
             background: #7aa99a;
             cursor: not-allowed;
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: right;
+            margin-top: 10px;
+            color: #087f5b;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .reset-box {
+            display: none;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        .reset-box h2 {
+            color: #087f5b;
+            text-align: center;
+            font-size: 21px;
+        }
+
+        .reset-button {
+            background: #2563eb;
+        }
+
+        .reset-button:hover {
+            background: #1d4ed8;
         }
 
         #message {
             text-align: center;
             margin-top: 15px;
             font-weight: bold;
+            line-height: 1.5;
         }
 
         .register-link {
@@ -154,9 +188,6 @@
         }
 
     </style>
-
-
-    <!-- SUPABASE -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -198,9 +229,6 @@
 
             <form id="loginForm">
 
-
-                <!-- EMAIL -->
-
                 <label for="email">
                     Email
                 </label>
@@ -213,8 +241,6 @@
                     required
                 >
 
-
-                <!-- PASSWORD -->
 
                 <label for="password">
                     Password
@@ -229,7 +255,6 @@
                         required
                     >
 
-
                     <button
                         type="button"
                         id="togglePassword"
@@ -242,7 +267,14 @@
                 </div>
 
 
-                <!-- LOGIN BUTTON -->
+                <a
+                    href="#"
+                    id="forgotPassword"
+                    class="forgot-link"
+                >
+                    Forgot Password?
+                </a>
+
 
                 <button
                     type="submit"
@@ -252,8 +284,40 @@
                     Login
                 </button>
 
-
             </form>
+
+
+            <!-- PASSWORD RESET -->
+
+            <div
+                id="resetBox"
+                class="reset-box"
+            >
+
+                <h2>
+                    Reset Your Password
+                </h2>
+
+                <p>
+                    Enter your email address and we'll send you a password reset link.
+                </p>
+
+                <input
+                    type="email"
+                    id="resetEmail"
+                    class="normal-input"
+                    placeholder="Enter your email"
+                >
+
+                <button
+                    type="button"
+                    id="resetButton"
+                    class="reset-button"
+                >
+                    Send Reset Link
+                </button>
+
+            </div>
 
 
             <p id="message"></p>
@@ -274,16 +338,18 @@
     </div>
 
 
+
     <script>
 
-
-        /* =========================
-           SUPABASE CONNECTION
-        ========================= */
+        // ==============================
+        // SUPABASE CONNECTION
+        // ==============================
 
         const SUPABASE_URL =
             "https://zofngbuatccapcypmvkf.supabase.co";
 
+
+        // ADD YOUR EXISTING PUBLISHABLE KEY HERE
 
         const SUPABASE_PUBLISHABLE_KEY =
             "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
@@ -296,64 +362,56 @@
             );
 
 
-        /* =========================
-           ELEMENTS
-        ========================= */
+        // ==============================
+        // ELEMENTS
+        // ==============================
 
         const form =
-            document.getElementById(
-                "loginForm"
-            );
-
+            document.getElementById("loginForm");
 
         const emailInput =
-            document.getElementById(
-                "email"
-            );
-
+            document.getElementById("email");
 
         const passwordInput =
-            document.getElementById(
-                "password"
-            );
-
+            document.getElementById("password");
 
         const togglePassword =
-            document.getElementById(
-                "togglePassword"
-            );
-
+            document.getElementById("togglePassword");
 
         const loginButton =
-            document.getElementById(
-                "loginButton"
-            );
+            document.getElementById("loginButton");
 
+        const forgotPassword =
+            document.getElementById("forgotPassword");
+
+        const resetBox =
+            document.getElementById("resetBox");
+
+        const resetEmail =
+            document.getElementById("resetEmail");
+
+        const resetButton =
+            document.getElementById("resetButton");
 
         const message =
-            document.getElementById(
-                "message"
-            );
+            document.getElementById("message");
 
 
-        /* =========================
-           SHOW / HIDE PASSWORD
-        ========================= */
+        // ==============================
+        // SHOW / HIDE PASSWORD
+        // ==============================
 
         togglePassword.addEventListener(
             "click",
             function() {
 
                 if (
-                    passwordInput.type ===
-                    "password"
+                    passwordInput.type === "password"
                 ) {
 
-                    passwordInput.type =
-                        "text";
+                    passwordInput.type = "text";
 
-                    togglePassword.textContent =
-                        "🙈";
+                    togglePassword.textContent = "🙈";
 
                     togglePassword.setAttribute(
                         "aria-label",
@@ -362,11 +420,9 @@
 
                 } else {
 
-                    passwordInput.type =
-                        "password";
+                    passwordInput.type = "password";
 
-                    togglePassword.textContent =
-                        "👁️";
+                    togglePassword.textContent = "👁️";
 
                     togglePassword.setAttribute(
                         "aria-label",
@@ -379,9 +435,124 @@
         );
 
 
-        /* =========================
-           LOGIN
-        ========================= */
+        // ==============================
+        // SHOW RESET BOX
+        // ==============================
+
+        forgotPassword.addEventListener(
+            "click",
+            function(event) {
+
+                event.preventDefault();
+
+                resetBox.style.display = "block";
+
+                resetEmail.value =
+                    emailInput.value.trim();
+
+                message.textContent = "";
+
+                resetEmail.focus();
+
+            }
+        );
+
+
+        // ==============================
+        // SEND PASSWORD RESET EMAIL
+        // ==============================
+
+        resetButton.addEventListener(
+            "click",
+            async function() {
+
+                const email =
+                    resetEmail.value
+                    .trim()
+                    .toLowerCase();
+
+
+                if (!email) {
+
+                    message.textContent =
+                        "Please enter your email address.";
+
+                    message.style.color = "red";
+
+                    return;
+                }
+
+
+                resetButton.disabled = true;
+
+                resetButton.textContent =
+                    "Sending...";
+
+
+                message.textContent = "";
+
+
+                try {
+
+                    const redirectUrl =
+                        window.location.origin +
+                        "/update-password.html";
+
+
+                    const { error } =
+                        await supabaseClient.auth
+                            .resetPasswordForEmail(
+                                email,
+                                {
+                                    redirectTo:
+                                        redirectUrl
+                                }
+                            );
+
+
+                    if (error) {
+
+                        throw error;
+
+                    }
+
+
+                    message.textContent =
+                        "If an account exists for this email, a password reset link has been sent. Check your email.";
+
+                    message.style.color =
+                        "green";
+
+
+                } catch (error) {
+
+                    console.error(
+                        "PASSWORD RESET ERROR:",
+                        error
+                    );
+
+                    message.textContent =
+                        "Could not send the reset email. Please try again.";
+
+                    message.style.color =
+                        "red";
+
+                } finally {
+
+                    resetButton.disabled = false;
+
+                    resetButton.textContent =
+                        "Send Reset Link";
+
+                }
+
+            }
+        );
+
+
+        // ==============================
+        // LOGIN
+        // ==============================
 
         form.addEventListener(
             "submit",
@@ -400,12 +571,10 @@
                     passwordInput.value;
 
 
-                message.textContent =
-                    "";
+                message.textContent = "";
 
 
-                loginButton.disabled =
-                    true;
+                loginButton.disabled = true;
 
                 loginButton.textContent =
                     "Logging in...";
@@ -413,20 +582,15 @@
 
                 try {
 
-
                     const {
                         data,
                         error
                     } =
-                        await supabaseClient.auth.signInWithPassword({
-
-                            email:
-                                email,
-
-                            password:
-                                password
-
-                        });
+                        await supabaseClient.auth
+                            .signInWithPassword({
+                                email: email,
+                                password: password
+                            });
 
 
                     if (error) {
@@ -442,10 +606,6 @@
                     }
 
 
-                    /* =========================
-                       GET USER
-                    ========================= */
-
                     const user =
                         data.user;
 
@@ -453,42 +613,30 @@
                     const userName =
                         user &&
                         user.user_metadata
-                        ? user.user_metadata.name || ""
-                        : "";
+                            ? user.user_metadata.name || ""
+                            : "";
 
-
-                    /* =========================
-                       SAVE BASIC LOGIN INFO
-                       FOR EXISTING PAGES
-                    ========================= */
 
                     localStorage.setItem(
                         "loggedIn",
                         "true"
                     );
 
-
                     localStorage.setItem(
                         "userId",
                         user.id
                     );
-
 
                     localStorage.setItem(
                         "userName",
                         userName
                     );
 
-
                     localStorage.setItem(
                         "userEmail",
                         user.email || email
                     );
 
-
-                    /* =========================
-                       SUCCESS
-                    ========================= */
 
                     message.textContent =
                         "Login successful!";
@@ -510,6 +658,11 @@
 
                 } catch (error) {
 
+                    console.error(
+                        "LOGIN ERROR:",
+                        error
+                    );
+
                     message.textContent =
                         "Unable to login. Please try again.";
 
@@ -518,8 +671,7 @@
 
                 } finally {
 
-                    loginButton.disabled =
-                        false;
+                    loginButton.disabled = false;
 
                     loginButton.textContent =
                         "Login";
@@ -531,7 +683,10 @@
 
     </script>
 
-
 </body>
 
 </html>
+
+Important: The reset link points to "update-password.html". Supabase requires that redirect URL to be allowed in your project's Auth redirect settings.
+
+For now, replace your "login.html", add your publishable key, save it, and don't test the reset link yet. Next we'll create the "update-password.html" page that actually lets the user choose a new password.
