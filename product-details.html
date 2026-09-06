@@ -2,14 +2,20 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Product Details</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
@@ -97,6 +103,43 @@
             line-height: 1.8;
         }
 
+        /* ==============================
+           CONTACT BUTTONS
+        ============================== */
+
+        .contact-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .contact-button {
+            flex: 1;
+            padding: 13px;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .call-button {
+            background: #0f5132;
+        }
+
+        .call-button:hover {
+            background: #0b3d26;
+        }
+
+        .email-button {
+            background: #2563eb;
+        }
+
+        .email-button:hover {
+            background: #1d4ed8;
+        }
+
         .back-button {
             display: block;
             width: 100%;
@@ -125,6 +168,7 @@
         }
 
         @media (max-width: 600px) {
+
             .container {
                 margin: 15px auto;
             }
@@ -136,23 +180,44 @@
             .product-name {
                 font-size: 24px;
             }
+
+            .contact-buttons {
+                flex-direction: column;
+            }
+
         }
+
     </style>
+
 </head>
+
 
 <body>
 
     <header>
+
         <h1>Product Details</h1>
+
     </header>
+
 
     <div class="container">
 
-        <div id="message" class="message">
+        <div
+            id="message"
+            class="message"
+        >
             Loading product...
         </div>
 
-        <div id="productCard" class="product-card" style="display:none;">
+
+        <div
+            id="productCard"
+            class="product-card"
+            style="display:none;"
+        >
+
+            <!-- PRODUCT IMAGE -->
 
             <img
                 id="productImage"
@@ -160,18 +225,49 @@
                 alt="Product image"
             >
 
-            <div id="productName" class="product-name"></div>
 
-            <div id="productPrice" class="price"></div>
+            <!-- PRODUCT NAME -->
 
-            <div id="productCategory" class="category"></div>
+            <div
+                id="productName"
+                class="product-name"
+            ></div>
+
+
+            <!-- PRICE -->
+
+            <div
+                id="productPrice"
+                class="price"
+            ></div>
+
+
+            <!-- CATEGORY -->
+
+            <div
+                id="productCategory"
+                class="category"
+            ></div>
+
+
+            <!-- DESCRIPTION -->
 
             <div class="section">
+
                 <h3>Description</h3>
-                <div id="productDescription" class="description"></div>
+
+                <div
+                    id="productDescription"
+                    class="description"
+                ></div>
+
             </div>
 
+
+            <!-- SELLER INFORMATION -->
+
             <div class="section">
+
                 <h3>Seller Information</h3>
 
                 <div class="seller-info">
@@ -192,15 +288,48 @@
                     </div>
 
                 </div>
+
             </div>
 
-            <a href="products.html" class="back-button">
+
+            <!-- CONTACT SELLER -->
+
+            <div
+                id="contactButtons"
+                class="contact-buttons"
+            >
+
+                <a
+                    id="callSeller"
+                    class="contact-button call-button"
+                >
+                    📞 Call Seller
+                </a>
+
+
+                <a
+                    id="emailSeller"
+                    class="contact-button email-button"
+                >
+                    ✉️ Email Seller
+                </a>
+
+            </div>
+
+
+            <!-- BACK BUTTON -->
+
+            <a
+                href="products.html"
+                class="back-button"
+            >
                 ← Back to Products
             </a>
 
         </div>
 
     </div>
+
 
 
     <script>
@@ -212,8 +341,12 @@
         const SUPABASE_URL =
             "https://zofngbuatccapcypmvkf.supabase.co";
 
+
+        // ADD YOUR SUPABASE PUBLISHABLE KEY HERE
+
         const SUPABASE_KEY =
             "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
+
 
         const supabaseClient =
             window.supabase.createClient(
@@ -226,11 +359,15 @@
         // GET PRODUCT ID FROM URL
         // ==============================
 
-        const params = new URLSearchParams(
-            window.location.search
-        );
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
 
-        const productId = params.get("id");
+
+        const productId =
+            params.get("id");
+
 
 
         // ==============================
@@ -242,9 +379,12 @@
             const message =
                 document.getElementById("message");
 
+
             const productCard =
                 document.getElementById("productCard");
 
+
+            // Check product ID
 
             if (!productId) {
 
@@ -257,19 +397,32 @@
             }
 
 
+
             try {
+
+                // ==============================
+                // GET PRODUCT FROM SUPABASE
+                // ==============================
 
                 const { data, error } =
                     await supabaseClient
+
                         .from("products")
+
                         .select("*")
+
                         .eq("id", productId)
+
                         .single();
 
 
+
                 if (error) {
+
                     throw error;
+
                 }
+
 
 
                 if (!data) {
@@ -283,44 +436,70 @@
                 }
 
 
+
                 // ==============================
                 // DISPLAY PRODUCT
                 // ==============================
 
-                document.getElementById("productName")
-                    .textContent = data.name || "Unnamed product";
+                document
+                    .getElementById("productName")
+                    .textContent =
+                    data.name ||
+                    "Unnamed product";
 
 
-                document.getElementById("productPrice")
+
+                document
+                    .getElementById("productPrice")
                     .textContent =
                     data.price
                         ? "Price: " + data.price
                         : "Price not available";
 
 
-                document.getElementById("productCategory")
+
+                document
+                    .getElementById("productCategory")
                     .textContent =
-                    data.category || "Uncategorized";
+                    data.category ||
+                    "Uncategorized";
 
 
-                document.getElementById("productDescription")
+
+                document
+                    .getElementById("productDescription")
                     .textContent =
-                    data.description || "No description provided.";
+                    data.description ||
+                    "No description provided.";
 
 
-                document.getElementById("sellerName")
+
+                // ==============================
+                // SELLER INFORMATION
+                // ==============================
+
+                document
+                    .getElementById("sellerName")
                     .textContent =
-                    data.seller_name || "Not provided";
+                    data.seller_name ||
+                    "Not provided";
 
 
-                document.getElementById("sellerPhone")
+
+                document
+                    .getElementById("sellerPhone")
                     .textContent =
-                    data.phone || "Not provided";
+                    data.phone ||
+                    "Not provided";
 
 
-                document.getElementById("sellerEmail")
+
+                document
+                    .getElementById("sellerEmail")
                     .textContent =
-                    data.seller_email || "Not provided";
+                    data.seller_email ||
+                    "Not provided";
+
 
 
                 // ==============================
@@ -328,41 +507,116 @@
                 // ==============================
 
                 const image =
-                    document.getElementById("productImage");
+                    document.getElementById(
+                        "productImage"
+                    );
+
 
 
                 if (data.image_url) {
 
-                    image.src = data.image_url;
+                    image.src =
+                        data.image_url;
 
-                    image.style.display = "block";
+                    image.style.display =
+                        "block";
 
                 } else {
 
-                    image.style.display = "none";
+                    image.style.display =
+                        "none";
+
                 }
+
+
+
+                // ==============================
+                // CONTACT SELLER BUTTONS
+                // ==============================
+
+                const callButton =
+                    document.getElementById(
+                        "callSeller"
+                    );
+
+
+                const emailButton =
+                    document.getElementById(
+                        "emailSeller"
+                    );
+
+
+                // CALL BUTTON
+
+                if (data.phone) {
+
+                    callButton.href =
+                        "tel:" + data.phone;
+
+                } else {
+
+                    callButton.style.display =
+                        "none";
+
+                }
+
+
+
+                // EMAIL BUTTON
+
+                if (data.seller_email) {
+
+                    emailButton.href =
+                        "mailto:" +
+                        data.seller_email;
+
+                } else {
+
+                    emailButton.style.display =
+                        "none";
+
+                }
+
 
 
                 // ==============================
                 // SHOW PRODUCT
                 // ==============================
 
-                message.style.display = "none";
+                message.style.display =
+                    "none";
 
-                productCard.style.display = "block";
+
+                productCard.style.display =
+                    "block";
+
 
 
             } catch (error) {
 
-                console.error(error);
+                console.error(
+                    "PRODUCT ERROR:",
+                    error
+                );
+
 
                 message.innerHTML =
                     "Could not load this product.";
 
-                message.classList.add("error");
+
+                message.classList.add(
+                    "error"
+                );
+
             }
+
         }
 
+
+
+        // ==============================
+        // START
+        // ==============================
 
         loadProduct();
 
@@ -370,4 +624,4 @@
 
 </body>
 
-</html>
+    </html>
