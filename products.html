@@ -12,11 +12,7 @@
 
 <title>Products - MarketPlace</title>
 
-
-<!-- SUPABASE -->
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 
 <style>
 
@@ -176,6 +172,24 @@ h1 {
     grid-column: 1 / -1;
 }
 
+.login-box {
+    background: white;
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px;
+    grid-column: 1 / -1;
+}
+
+.login-box a {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: #087f5b;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
 </style>
 
 </head>
@@ -280,6 +294,12 @@ const SUPABASE_URL =
     "https://zofngbuatccapcypmvkf.supabase.co";
 
 
+/*
+   IMPORTANT:
+   Keep the SAME publishable key
+   you were already using here.
+*/
+
 const SUPABASE_KEY =
     "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
 
@@ -333,45 +353,103 @@ let products = [];
 
 
 /* =================================
-   FAVORITES
+   SUPABASE FAVORITES
 ================================= */
 
 let favorites = [];
 
+let currentUser = null;
 
-try {
 
-    const savedFavorites =
-        localStorage.getItem(
-            "favorites"
+/* =================================
+   GET CURRENT USER
+================================= */
+
+async function getCurrentUser() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient.auth.getUser();
+
+
+    if (error) {
+
+        console.error(
+            "AUTH ERROR:",
+            error
         );
 
-
-    if (savedFavorites) {
-
-        favorites =
-            JSON.parse(
-                savedFavorites
-            );
-
+        return null;
     }
 
 
-    if (!Array.isArray(favorites)) {
-
-        favorites = [];
-
-    }
-
-} catch (error) {
-
-    favorites = [];
+    return data.user || null;
 
 }
 
 
 /* =================================
-   LOAD PRODUCTS FROM SUPABASE
+   LOAD USER FAVORITES
+================================= */
+
+async function loadFavorites() {
+
+    currentUser =
+        await getCurrentUser();
+
+
+    if (!currentUser) {
+
+        favorites = [];
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("favorites")
+        .select("product_id")
+        .eq(
+            "user_id",
+            currentUser.id
+        );
+
+
+    if (error) {
+
+        console.error(
+            "LOAD FAVORITES ERROR:",
+            error
+        );
+
+        favorites = [];
+
+        return;
+    }
+
+
+    favorites =
+        Array.isArray(data)
+        ? data.map(
+            function(row) {
+                return String(
+                    row.product_id
+                );
+            }
+        )
+        : [];
+
+}
+
+
+/* =================================
+   LOAD PRODUCTS
 ================================= */
 
 async function loadProducts() {
@@ -388,19 +466,30 @@ async function loadProducts() {
 
     try {
 
+        /*
+           Load login first
+        */
+
+        await loadFavorites();
+
+
+        /*
+           Load products
+        */
+
         const {
             data,
             error
         } =
-            await supabaseClient
-                .from("products")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
+        await supabaseClient
+            .from("products")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
 
         if (error) {
@@ -429,6 +518,7 @@ async function loadProducts() {
 
         productsContainer.innerHTML = `
             <div class="empty">
+
                 <h2>
                     Could not load products
                 </h2>
@@ -436,6 +526,7 @@ async function loadProducts() {
                 <p>
                     Please try again.
                 </p>
+
             </div>
         `;
 
@@ -514,7 +605,9 @@ function displayProducts(list) {
             card.innerHTML = `
 
                 <img
-                    src="${product.image_url || ""}"
+                    src="${escapeHTML(
+                        product.image_url || ""
+                    )}"
                     alt="${escapeHTML(
                         product.name ||
                         "Product"
@@ -623,7 +716,9 @@ function displayProducts(list) {
             );
 
 
-            /* FAVORITE BUTTON */
+            /* =================================
+               FAVORITE BUTTON
+            ================================= */
 
             const favoriteButton =
                 card.querySelector(
@@ -633,10 +728,40 @@ function displayProducts(list) {
 
             favoriteButton.addEventListener(
                 "click",
-                function() {
+                async function() {
 
-                    const favoritePosition =
-                        favorites.findIndex(
+                    /*
+                       LOGIN CHECK
+                    */
+
+                    if (!currentUser) {
+
+                        message.textContent =
+                            "Please login to save favorites.";
+
+                        message.style.color =
+                            "#d62828";
+
+                        setTimeout(
+                            function() {
+
+                                window.location.href =
+                                    "login.html";
+
+                            },
+                            1000
+                        );
+
+                        return;
+                    }
+
+
+                    /*
+                       CHECK IF ALREADY FAVORITE
+                    */
+
+                    const alreadyFavorite =
+                        favorites.some(
                             function(id) {
 
                                 return String(id) ===
@@ -646,54 +771,160 @@ function displayProducts(list) {
                         );
 
 
-                    if (
-                        favoritePosition ===
-                        -1
-                    ) {
-
-                        favorites.push(
-                            productId
-                        );
+                    favoriteButton.disabled =
+                        true;
 
 
-                        favoriteButton.textContent =
-                            "❤️ Remove Favorite";
+                    if (!alreadyFavorite) {
+
+                        /*
+                           ADD FAVORITE
+                        */
+
+                        const {
+                            error: insertError
+                        } =
+                        await supabaseClient
+                            .from("favorites")
+                            .insert({
+
+                                user_id:
+                                    currentUser.id,
+
+                                product_id:
+                                    String(productId)
+
+                            });
 
 
-                        message.textContent =
-                            "Added to favorites!";
+                        if (insertError) {
 
-                        message.style.color =
-                            "#087f5b";
+                            console.error(
+                                "ADD FAVORITE ERROR:",
+                                insertError
+                            );
+
+
+                            /*
+                               Duplicate protection
+                            */
+
+                            if (
+                                insertError.code ===
+                                "23505"
+                            ) {
+
+                                favorites.push(
+                                    String(
+                                        productId
+                                    )
+                                );
+
+                                favoriteButton.textContent =
+                                    "❤️ Remove Favorite";
+
+                            } else {
+
+                                message.textContent =
+                                    "Could not add favorite: " +
+                                    insertError.message;
+
+                                message.style.color =
+                                    "red";
+
+                            }
+
+
+                        } else {
+
+                            favorites.push(
+                                String(
+                                    productId
+                                )
+                            );
+
+
+                            favoriteButton.textContent =
+                                "❤️ Remove Favorite";
+
+
+                            message.textContent =
+                                "Added to favorites!";
+
+                            message.style.color =
+                                "#087f5b";
+
+                        }
 
 
                     } else {
 
-                        favorites.splice(
-                            favoritePosition,
-                            1
-                        );
+                        /*
+                           REMOVE FAVORITE
+                        */
+
+                        const {
+                            error: deleteError
+                        } =
+                        await supabaseClient
+                            .from("favorites")
+                            .delete()
+                            .eq(
+                                "user_id",
+                                currentUser.id
+                            )
+                            .eq(
+                                "product_id",
+                                String(productId)
+                            );
 
 
-                        favoriteButton.textContent =
-                            "♡ Add to Favorites";
+                        if (deleteError) {
+
+                            console.error(
+                                "REMOVE FAVORITE ERROR:",
+                                deleteError
+                            );
 
 
-                        message.textContent =
-                            "Removed from favorites.";
+                            message.textContent =
+                                "Could not remove favorite: " +
+                                deleteError.message;
 
-                        message.style.color =
-                            "#d62828";
+                            message.style.color =
+                                "red";
+
+
+                        } else {
+
+                            favorites =
+                                favorites.filter(
+                                    function(id) {
+
+                                        return String(id) !==
+                                            String(productId);
+
+                                    }
+                                );
+
+
+                            favoriteButton.textContent =
+                                "♡ Add to Favorites";
+
+
+                            message.textContent =
+                                "Removed from favorites.";
+
+                            message.style.color =
+                                "#d62828";
+
+                        }
 
                     }
 
 
-                    localStorage.setItem(
-                        "favorites",
-                        JSON.stringify(
-                            favorites
-                        )
-                    );
+                    favoriteButton.disabled =
+                        false;
 
                 }
             );
@@ -780,7 +1011,7 @@ function filterProducts() {
 
 function escapeHTML(value) {
 
-    return String(value)
+    return String(value ?? "")
         .replace(
             /&/g,
             "&amp;"
