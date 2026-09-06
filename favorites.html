@@ -9,6 +9,8 @@
 
 <title>Favorites - MarketPlace</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 * {
@@ -49,6 +51,7 @@ h1 {
     text-align: center;
     font-weight: bold;
     margin: 15px;
+    line-height: 1.5;
 }
 
 #favoritesContainer {
@@ -180,10 +183,26 @@ h1 {
 
 <script>
 
+/* =================================
+   SUPABASE
+================================= */
 
-/* =========================
+const SUPABASE_URL =
+"https://zofngbuatccapcypmvkf.supabase.co";
+
+const SUPABASE_KEY =
+"YOUR_EXISTING_PUBLISHABLE_KEY";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+/* =================================
    ELEMENTS
-========================= */
+================================= */
 
 const favoritesContainer =
 document.getElementById(
@@ -196,301 +215,434 @@ document.getElementById(
 );
 
 
-/* =========================
-   GET PRODUCTS
-========================= */
+/* =================================
+   ESCAPE HTML
+================================= */
 
-let products = [];
+function escapeHTML(value) {
 
-try {
-
-    const savedProducts =
-        localStorage.getItem(
-            "products"
-        );
-
-    if (savedProducts) {
-
-        products =
-            JSON.parse(
-                savedProducts
-            );
-
-    }
-
-    if (!Array.isArray(products)) {
-
-        products = [];
-
-    }
-
-} catch (error) {
-
-    products = [];
-
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
-/* =========================
-   GET FAVORITES
-========================= */
+/* =================================
+   LOAD FAVORITES
+================================= */
 
-let favorites = [];
+async function loadFavorites() {
 
-try {
+    try {
 
-    const savedFavorites =
-        localStorage.getItem(
-            "favorites"
-        );
+        message.textContent =
+            "Checking your login...";
 
-    if (savedFavorites) {
 
-        favorites =
-            JSON.parse(
-                savedFavorites
+        /* CHECK LOGIN */
+
+        const {
+            data: authData,
+            error: authError
+        } =
+        await supabaseClient.auth.getUser();
+
+
+        if (authError) {
+
+            throw new Error(
+                authError.message
             );
 
-    }
-
-    if (!Array.isArray(favorites)) {
-
-        favorites = [];
-
-    }
-
-} catch (error) {
-
-    favorites = [];
-
-}
+        }
 
 
-/* =========================
-   DISPLAY FAVORITES
-========================= */
-
-function displayFavorites() {
-
-    favoritesContainer.innerHTML = "";
-
-    if (favorites.length === 0) {
-
-        favoritesContainer.innerHTML = `
-
-            <div class="empty">
-
-                <h2>
-                    No Favorite Products
-                </h2>
-
-                <p>
-                    Products you save as
-                    favorites will appear here.
-                </p>
-
-                <a href="products.html">
-                    Browse Products
-                </a>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
+        const user =
+            authData.user;
 
 
-    let foundProduct = false;
+        if (!user) {
 
+            favoritesContainer.innerHTML = `
 
-    favorites.forEach(
-        function(favoriteId) {
-
-            const index =
-                products.findIndex(
-                    function(product) {
-
-                        return String(
-                            product.id
-                        ) === String(
-                            favoriteId
-                        );
-
-                    }
-                );
-
-
-            if (index === -1) {
-                return;
-            }
-
-
-            foundProduct = true;
-
-
-            const product =
-                products[index];
-
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "product-card";
-
-
-            card.innerHTML = `
-
-                <img
-                    src="${product.image || ""}"
-                    alt="${product.name || "Product"}"
-                >
-
-                <div class="product-info">
+                <div class="empty">
 
                     <h2>
-                        ${product.name || "Product"}
+                        Login Required
                     </h2>
 
-                    <p class="price">
-                        ${product.price || "Price not provided"}
-                    </p>
-
                     <p>
-
-                        <span class="category">
-                            ${product.category || "Other"}
-                        </span>
-
+                        Please login to view
+                        your favorite products.
                     </p>
 
-                    <p>
-                        ${product.description || "No description available."}
-                    </p>
-
-                    <a
-                        href="product-details.html?id=${index}"
-                        class="button details-button"
-                    >
-                        👁️ View Details
+                    <a href="login.html">
+                        Login
                     </a>
-
-                    <button
-                        type="button"
-                        class="button remove-button"
-                    >
-                        ❤️ Remove Favorite
-                    </button>
 
                 </div>
 
             `;
 
+            message.textContent = "";
 
-            favoritesContainer.appendChild(
-                card
+            return;
+        }
+
+
+        message.textContent =
+            "Loading your favorites...";
+
+
+        /* =================================
+           GET FAVORITES
+        ================================= */
+
+        const {
+            data: favoriteRows,
+            error: favoriteError
+        } =
+        await supabaseClient
+            .from("favorites")
+            .select("product_id, created_at")
+            .eq("user_id", user.id)
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
             );
 
 
-            /* =========================
-               REMOVE FAVORITE
-            ========================= */
+        if (favoriteError) {
 
-            const removeButton =
-                card.querySelector(
-                    ".remove-button"
+            throw new Error(
+                "Could not load favorites: " +
+                favoriteError.message
+            );
+
+        }
+
+
+        /* NO FAVORITES */
+
+        if (
+            !favoriteRows ||
+            favoriteRows.length === 0
+        ) {
+
+            showEmptyFavorites();
+
+            return;
+        }
+
+
+        /* =================================
+           GET PRODUCT IDS
+        ================================= */
+
+        const productIds =
+            favoriteRows.map(
+                function(row) {
+                    return row.product_id;
+                }
+            );
+
+
+        /* =================================
+           GET PRODUCTS
+        ================================= */
+
+        const {
+            data: products,
+            error: productError
+        } =
+        await supabaseClient
+            .from("products")
+            .select("*")
+            .in("id", productIds);
+
+
+        if (productError) {
+
+            throw new Error(
+                "Could not load products: " +
+                productError.message
+            );
+
+        }
+
+
+        /* =================================
+           DISPLAY IN FAVORITE ORDER
+        ================================= */
+
+        const productMap =
+            new Map();
+
+
+        products.forEach(
+            function(product) {
+
+                productMap.set(
+                    String(product.id),
+                    product
                 );
 
-
-            removeButton.addEventListener(
-                "click",
-                function() {
-
-                    favorites =
-                        favorites.filter(
-                            function(id) {
-
-                                return String(id) !==
-                                    String(favoriteId);
-
-                            }
-                        );
+            }
+        );
 
 
-                    localStorage.setItem(
-                        "favorites",
-                        JSON.stringify(
-                            favorites
+        favoritesContainer.innerHTML = "";
+
+        let foundProduct = false;
+
+
+        favoriteRows.forEach(
+            function(favorite) {
+
+                const product =
+                    productMap.get(
+                        String(
+                            favorite.product_id
                         )
                     );
 
 
-                    message.textContent =
-                        "Removed from favorites.";
-
-                    message.style.color =
-                        "#d62828";
-
-
-                    displayFavorites();
-
+                if (!product) {
+                    return;
                 }
-            );
-
-        }
-    );
 
 
-    if (!foundProduct) {
+                foundProduct = true;
 
-        favorites = [];
 
-        localStorage.setItem(
-            "favorites",
-            JSON.stringify(
-                favorites
-            )
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "product-card";
+
+
+                card.innerHTML = `
+
+                    <img
+                        src="${escapeHTML(
+                            product.image_url || ""
+                        )}"
+                        alt="${escapeHTML(
+                            product.name || "Product"
+                        )}"
+                    >
+
+                    <div class="product-info">
+
+                        <h2>
+                            ${escapeHTML(
+                                product.name ||
+                                "Product"
+                            )}
+                        </h2>
+
+                        <p class="price">
+                            ${escapeHTML(
+                                product.price ||
+                                "Price not provided"
+                            )}
+                        </p>
+
+                        <p>
+
+                            <span class="category">
+                                ${escapeHTML(
+                                    product.category ||
+                                    "Other"
+                                )}
+                            </span>
+
+                        </p>
+
+                        <p>
+                            ${escapeHTML(
+                                product.description ||
+                                "No description available."
+                            )}
+                        </p>
+
+                        <a
+                            href="product-details.html?id=${encodeURIComponent(
+                                product.id
+                            )}"
+                            class="button details-button"
+                        >
+                            👁️ View Details
+                        </a>
+
+                        <button
+                            type="button"
+                            class="button remove-button"
+                        >
+                            ❤️ Remove Favorite
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                favoritesContainer.appendChild(
+                    card
+                );
+
+
+                /* =================================
+                   REMOVE FAVORITE
+                ================================= */
+
+                const removeButton =
+                    card.querySelector(
+                        ".remove-button"
+                    );
+
+
+                removeButton.addEventListener(
+                    "click",
+                    async function() {
+
+                        removeButton.disabled =
+                            true;
+
+                        removeButton.textContent =
+                            "Removing...";
+
+
+                        const {
+                            error: deleteError
+                        } =
+                        await supabaseClient
+                            .from("favorites")
+                            .delete()
+                            .eq(
+                                "user_id",
+                                user.id
+                            )
+                            .eq(
+                                "product_id",
+                                product.id
+                            );
+
+
+                        if (deleteError) {
+
+                            console.error(
+                                deleteError
+                            );
+
+                            message.textContent =
+                                "Could not remove favorite: " +
+                                deleteError.message;
+
+                            message.style.color =
+                                "red";
+
+                            removeButton.disabled =
+                                false;
+
+                            removeButton.textContent =
+                                "❤️ Remove Favorite";
+
+                            return;
+                        }
+
+
+                        message.textContent =
+                            "Removed from favorites.";
+
+                        message.style.color =
+                            "#d62828";
+
+
+                        loadFavorites();
+
+                    }
+                );
+
+            }
         );
 
 
-        favoritesContainer.innerHTML = `
+        if (!foundProduct) {
 
-            <div class="empty">
+            showEmptyFavorites();
 
-                <h2>
-                    No Favorite Products
-                </h2>
+            return;
+        }
 
-                <p>
-                    Your saved products are
-                    no longer available.
-                </p>
 
-                <a href="products.html">
-                    Browse Products
-                </a>
+        message.textContent =
+            "";
 
-            </div>
+    } catch (error) {
 
-        `;
+        console.error(error);
 
+        favoritesContainer.innerHTML = "";
+
+        message.textContent =
+            "Error: " + error.message;
+
+        message.style.color =
+            "red";
     }
 
 }
 
 
-/* =========================
-   START
-========================= */
+/* =================================
+   EMPTY FAVORITES
+================================= */
 
-displayFavorites();
+function showEmptyFavorites() {
+
+    message.textContent = "";
+
+    favoritesContainer.innerHTML = `
+
+        <div class="empty">
+
+            <h2>
+                No Favorite Products
+            </h2>
+
+            <p>
+                Products you save as
+                favorites will appear here.
+            </p>
+
+            <a href="products.html">
+                Browse Products
+            </a>
+
+        </div>
+
+    `;
+}
+
+
+/* =================================
+   START
+================================= */
+
+loadFavorites();
 
 </script>
+
 
 </body>
 
