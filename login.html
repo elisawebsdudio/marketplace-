@@ -161,6 +161,11 @@
             font-size: 21px;
         }
 
+        .reset-box p {
+            text-align: center;
+            line-height: 1.5;
+        }
+
         .reset-button {
             background: #2563eb;
         }
@@ -349,7 +354,7 @@
             "https://zofngbuatccapcypmvkf.supabase.co";
 
 
-        // ADD YOUR EXISTING PUBLISHABLE KEY HERE
+        // KEEP YOUR EXISTING PUBLISHABLE KEY HERE
 
         const SUPABASE_PUBLISHABLE_KEY =
             "sb_publishable_ifpnnnvmw3cOAaykROZPaA_4DZ8tDLh";
@@ -488,15 +493,20 @@
                 resetButton.textContent =
                     "Sending...";
 
-
                 message.textContent = "";
 
 
                 try {
 
+                    /*
+                     * IMPORTANT:
+                     * This is a GitHub Pages PROJECT site.
+                     * Therefore /marketplace-/ must be included.
+                     */
+
                     const redirectUrl =
                         window.location.origin +
-                        "/update-password.html";
+                        "/marketplace-/update-password.html";
 
 
                     const { error } =
@@ -686,4 +696,3 @@
 </body>
 
 </html>
-
