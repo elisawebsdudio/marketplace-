@@ -2,18 +2,12 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>MarketPlace | Buy & Sell</title>
 
 <style>
-
-/* =========================
-   BASIC RESET
-========================= */
 
 * {
     box-sizing: border-box;
@@ -29,7 +23,6 @@ body {
     background: #f4f7f6;
     color: #222;
 }
-
 
 /* =========================
    NAVIGATION
@@ -53,7 +46,7 @@ nav a {
     color: white;
     text-decoration: none;
 
-    padding: 9px 10px;
+    padding: 9px 11px;
 
     font-weight: bold;
     font-size: 14px;
@@ -65,7 +58,6 @@ nav a:hover {
     background: rgba(255,255,255,0.15);
 }
 
-
 /* =========================
    HERO
 ========================= */
@@ -73,7 +65,7 @@ nav a:hover {
 .hero {
     text-align: center;
 
-    padding: 65px 20px 55px;
+    padding: 75px 20px 65px;
 
     background:
         linear-gradient(
@@ -86,26 +78,21 @@ nav a:hover {
 .hero h1 {
     color: #087f5b;
 
-    font-size: clamp(
-        30px,
-        7vw,
-        46px
-    );
+    font-size: clamp(32px, 7vw, 50px);
 
-    margin: 0 0 15px;
+    margin: 0 0 18px;
 }
 
 .hero p {
-    max-width: 650px;
+    max-width: 680px;
 
-    margin: 0 auto 25px;
+    margin: 0 auto 28px;
 
     font-size: 18px;
-    line-height: 1.6;
+    line-height: 1.7;
 
     color: #555;
 }
-
 
 /* =========================
    BUTTONS
@@ -117,27 +104,23 @@ nav a:hover {
     background: #087f5b;
     color: white;
 
-    padding: 13px 22px;
+    padding: 14px 23px;
 
     text-decoration: none;
 
-    border-radius: 7px;
+    border-radius: 8px;
 
     margin: 6px;
 
     font-weight: bold;
 
-    transition:
-        transform 0.2s,
-        background 0.2s;
+    transition: 0.2s;
 }
 
 .button:hover {
     background: #066b4d;
-
     transform: translateY(-2px);
 }
-
 
 /* =========================
    SEARCH
@@ -147,7 +130,7 @@ nav a:hover {
     width: 92%;
     max-width: 800px;
 
-    margin: 35px auto 25px;
+    margin: 40px auto 25px;
 
     text-align: center;
 }
@@ -165,7 +148,7 @@ nav a:hover {
 
     border: 1px solid #ccc;
 
-    border-radius: 8px;
+    border-radius: 9px;
 
     font-size: 16px;
 
@@ -180,16 +163,15 @@ nav a:hover {
         rgba(8,127,91,0.12);
 }
 
-
 /* =========================
    CATEGORIES
 ========================= */
 
 .categories {
     width: 92%;
-    max-width: 900px;
+    max-width: 950px;
 
-    margin: 30px auto;
+    margin: 35px auto;
 
     text-align: center;
 }
@@ -197,7 +179,7 @@ nav a:hover {
 .categories h2 {
     color: #087f5b;
 
-    margin-bottom: 15px;
+    margin-bottom: 18px;
 }
 
 .category-button {
@@ -219,9 +201,7 @@ nav a:hover {
 
     font-size: 15px;
 
-    transition:
-        transform 0.2s,
-        background 0.2s;
+    transition: 0.2s;
 }
 
 .category-button:hover {
@@ -229,7 +209,6 @@ nav a:hover {
 
     transform: translateY(-2px);
 }
-
 
 /* =========================
    LATEST PRODUCTS
@@ -239,7 +218,7 @@ nav a:hover {
     width: 92%;
     max-width: 1100px;
 
-    margin: 50px auto;
+    margin: 55px auto;
 }
 
 .latest h2 {
@@ -262,7 +241,6 @@ nav a:hover {
     gap: 20px;
 }
 
-
 /* =========================
    PRODUCT CARD
 ========================= */
@@ -280,9 +258,7 @@ nav a:hover {
 
     cursor: pointer;
 
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
+    transition: 0.2s;
 }
 
 .product-card:hover {
@@ -312,7 +288,7 @@ nav a:hover {
 .product-info h3 {
     color: #087f5b;
 
-    margin: 0 0 10px;
+    margin: 0 0 9px;
 
     font-size: 19px;
 }
@@ -325,6 +301,11 @@ nav a:hover {
     margin: 8px 0;
 }
 
+.category-text {
+    color: #777;
+
+    font-size: 14px;
+}
 
 /* =========================
    NO PRODUCTS
@@ -333,7 +314,7 @@ nav a:hover {
 .no-products {
     text-align: center;
 
-    padding: 30px;
+    padding: 35px;
 
     background: white;
 
@@ -346,7 +327,6 @@ nav a:hover {
     color: #087f5b;
 }
 
-
 /* =========================
    VIEW ALL
 ========================= */
@@ -357,27 +337,114 @@ nav a:hover {
     margin-top: 30px;
 }
 
+/* =========================
+   WHY MARKETPLACE
+========================= */
+
+.features {
+    width: 92%;
+    max-width: 1000px;
+
+    margin: 65px auto;
+
+    text-align: center;
+}
+
+.features h2 {
+    color: #087f5b;
+
+    margin-bottom: 25px;
+}
+
+.feature-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(210px, 1fr)
+        );
+
+    gap: 18px;
+}
+
+.feature-card {
+    background: white;
+
+    padding: 25px 18px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 3px 12px
+        rgba(0,0,0,0.08);
+}
+
+.feature-card .icon {
+    font-size: 32px;
+
+    margin-bottom: 10px;
+}
+
+.feature-card h3 {
+    color: #087f5b;
+
+    margin: 8px 0;
+}
+
+.feature-card p {
+    color: #666;
+
+    line-height: 1.5;
+
+    margin: 0;
+}
 
 /* =========================
    FOOTER
 ========================= */
 
 footer {
-    text-align: center;
-
     background: #222;
 
     color: white;
 
-    padding: 25px 15px;
+    text-align: center;
 
-    margin-top: 60px;
+    padding: 30px 15px;
+
+    margin-top: 70px;
+}
+
+footer h3 {
+    margin: 0 0 10px;
+
+    color: #8ff0cc;
 }
 
 footer p {
-    margin: 5px;
+    margin: 7px 0;
+
+    color: #ddd;
 }
 
+.footer-links {
+    margin-top: 15px;
+}
+
+.footer-links a {
+    color: white;
+
+    text-decoration: none;
+
+    margin: 0 8px;
+
+    font-size: 14px;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
 
 /* =========================
    MOBILE
@@ -396,7 +463,7 @@ footer p {
     }
 
     .hero {
-        padding: 50px 15px;
+        padding: 55px 15px;
     }
 
     .hero p {
@@ -429,7 +496,6 @@ footer p {
 
 }
 
-
 /* =========================
    VERY SMALL PHONES
 ========================= */
@@ -449,12 +515,9 @@ footer p {
 }
 
 </style>
-
 </head>
 
-
 <body>
-
 
 <!-- =========================
      NAVIGATION
@@ -462,29 +525,17 @@ footer p {
 
 <nav>
 
-<a href="index.html">
-Home
-</a>
+<a href="index.html">Home</a>
 
-<a href="products.html">
-Products
-</a>
+<a href="products.html">Products</a>
 
-<a href="login.html">
-Login
-</a>
+<a href="login.html">Login</a>
 
-<a href="post-products.html">
-Post Product
-</a>
+<a href="post-products.html">Post Product</a>
 
-<a href="favorites.html">
-Favorites
-</a>
+<a href="favorites.html">Favorites</a>
 
-<a href="account.html">
-My Account
-</a>
+<a href="account.html">My Account</a>
 
 </nav>
 
@@ -504,14 +555,12 @@ Discover products, advertise your products,
 and connect with buyers easily.
 </p>
 
-
 <a
 href="products.html"
 class="button"
 >
-🛍️ View Products
+🛍️ View Marketplace
 </a>
-
 
 <a
 href="post-products.html"
@@ -550,3 +599,283 @@ placeholder="Search for products..."
 
 <h2>
 Browse Categories
+</h2>
+
+<button
+class="category-button"
+onclick="openCategory('Electronics')"
+>
+📱 Electronics
+</button>
+
+<button
+class="category-button"
+onclick="openCategory('Fashion')"
+>
+👕 Fashion
+</button>
+
+<button
+class="category-button"
+onclick="openCategory('Home')"
+>
+🏠 Home
+</button>
+
+<button
+class="category-button"
+onclick="openCategory('Vehicles')"
+>
+🚗 Vehicles
+</button>
+
+<button
+class="category-button"
+onclick="openCategory('Books')"
+>
+📚 Books
+</button>
+
+<button
+class="category-button"
+onclick="openCategory('Other')"
+>
+📦 Other
+</button>
+
+</section>
+
+
+<!-- =========================
+     LATEST PRODUCTS
+========================= -->
+
+<section class="latest">
+
+<h2>
+🛍️ Latest Products
+</h2>
+
+<div id="latestProducts">
+
+<div class="no-products">
+
+<h3>
+Explore Our Marketplace
+</h3>
+
+<p>
+New products will appear here.
+</p>
+
+<a
+href="products.html"
+class="button"
+>
+View All Products
+</a>
+
+</div>
+
+</div>
+
+<div class="view-all">
+
+<a
+href="products.html"
+class="button"
+>
+View All Products
+</a>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     WHY MARKETPLACE
+========================= -->
+
+<section class="features">
+
+<h2>
+Why Use Our Marketplace?
+</h2>
+
+<div class="feature-grid">
+
+<div class="feature-card">
+
+<div class="icon">
+🛒
+</div>
+
+<h3>
+Easy Shopping
+</h3>
+
+<p>
+Browse products and find what
+you need easily.
+</p>
+
+</div>
+
+
+<div class="feature-card">
+
+<div class="icon">
+📢
+</div>
+
+<h3>
+Advertise Products
+</h3>
+
+<p>
+Post your products and reach
+potential buyers.
+</p>
+
+</div>
+
+
+<div class="feature-card">
+
+<div class="icon">
+❤️
+</div>
+
+<h3>
+Save Favorites
+</h3>
+
+<p>
+Keep products you like in your
+Favorites list.
+</p>
+
+</div>
+
+
+<div class="feature-card">
+
+<div class="icon">
+🤝
+</div>
+
+<h3>
+Connect With Sellers
+</h3>
+
+<p>
+Contact sellers directly about
+products you are interested in.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+<h3>
+MarketPlace
+</h3>
+
+<p>
+Buy. Sell. Connect.
+</p>
+
+<p>
+© 2026 MarketPlace. All rights reserved.
+</p>
+
+<div class="footer-links">
+
+<a href="index.html">
+Home
+</a>
+
+<a href="products.html">
+Products
+</a>
+
+<a href="post-products.html">
+Post Product
+</a>
+
+<a href="favorites.html">
+Favorites
+</a>
+
+</div>
+
+</footer>
+
+
+<script>
+
+/* =========================
+   SEARCH
+========================= */
+
+const searchInput =
+document.getElementById("searchInput");
+
+if (searchInput) {
+
+    searchInput.addEventListener(
+        "keypress",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                const search =
+                    searchInput.value.trim();
+
+                if (search !== "") {
+
+                    window.location.href =
+                        "products.html?search=" +
+                        encodeURIComponent(search);
+
+                } else {
+
+                    window.location.href =
+                        "products.html";
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================
+   CATEGORY
+========================= */
+
+function openCategory(category) {
+
+    window.location.href =
+        "products.html?category=" +
+        encodeURIComponent(category);
+
+}
+
+</script>
+
+</body>
+   </html>
